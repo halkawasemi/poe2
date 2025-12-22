@@ -3,265 +3,432 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PoE2 Sorceress Skill DB</title>
+    <title>PoE2 Sorceress Build Simulator</title>
     <style>
         :root {
             --bg-color: #0b0b0b;
+            --panel-bg: #141414;
             --card-bg: #1a1a1a;
             --text-main: #dcdcdc;
             --text-muted: #888;
+            --text-value: #fff;
             --accent-gold: #c8aa6d;
             --accent-fire: #b7362a;
             --accent-ice: #3a7caf;
             --accent-lightning: #d4b924;
+            --accent-pos: #4ece70; /* Buff color */
+            --accent-neg: #d14e4e; /* Debuff color */
             --border-color: #333;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            padding: 20px;
+        /* Header */
+        h1 { color: var(--accent-gold); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; font-size: 1.5rem; }
+        .subtitle { color: var(--text-muted); margin-bottom: 30px; font-size: 0.9rem; }
+
+        /* Layout */
+        .main-container {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        h1 {
-            color: var(--accent-gold);
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            border-bottom: 2px solid var(--accent-gold);
-            padding-bottom: 10px;
-        }
-
-        /* Controls */
-        .controls {
-            margin-bottom: 30px;
-            display: flex;
-            gap: 10px;
-        }
-
-        button {
-            background: #222;
-            border: 1px solid var(--accent-gold);
-            color: var(--accent-gold);
-            padding: 10px 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.9rem;
-        }
-
-        button:hover, button.active {
-            background: var(--accent-gold);
-            color: #000;
-        }
-
-        /* Grid */
-        .skill-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
             width: 100%;
-            max-width: 1000px;
+            max-width: 1200px;
+            flex-wrap: wrap;
         }
 
-        /* Cards */
+        /* Left: Skill Selection */
+        .skill-list {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
         .skill-card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
-            padding: 20px;
-            border-radius: 4px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
             position: relative;
-            overflow: hidden;
         }
 
-        .skill-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            border-color: var(--accent-gold);
+        .skill-card:hover { border-color: var(--accent-gold); background-color: #222; }
+        .skill-card.selected { border-left: 4px solid var(--accent-gold); background-color: #252525; }
+
+        .skill-header { display: flex; justify-content: space-between; align-items: center; }
+        .skill-name { font-weight: bold; font-size: 1.1rem; color: var(--text-value); }
+        .element-tag { font-size: 0.75rem; padding: 2px 6px; border-radius: 2px; font-weight: bold; color: #fff; }
+        
+        .tag-fire { background: var(--accent-fire); }
+        .tag-ice { background: var(--accent-ice); }
+        .tag-lightning { background: var(--accent-lightning); color: #000; }
+
+        /* Right: Simulator Panel */
+        .simulator-panel {
+            flex: 2;
+            min-width: 350px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: 25px;
+            border-radius: 4px;
+            display: none; /* Hidden by default */
+        }
+        .simulator-panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .panel-header { border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; }
+        .panel-title { font-size: 1.4rem; color: var(--text-value); margin-bottom: 5px; }
+        .panel-desc { color: var(--text-muted); font-style: italic; font-size: 0.9rem; }
+
+        /* Support Gems Section */
+        .section-title { color: var(--accent-gold); margin-bottom: 15px; font-size: 1rem; text-transform: uppercase; }
+        
+        .support-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 30px;
         }
 
-        .skill-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
-        }
-
-        .skill-name {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--text-main);
-        }
-
-        .element-tag {
-            font-size: 0.8rem;
-            padding: 2px 8px;
-            border-radius: 2px;
-            font-weight: bold;
-            color: #fff;
-        }
-
-        .tag-fire { background-color: var(--accent-fire); box-shadow: 0 0 5px var(--accent-fire); }
-        .tag-ice { background-color: var(--accent-ice); box-shadow: 0 0 5px var(--accent-ice); }
-        .tag-lightning { background-color: var(--accent-lightning); color: #000; box-shadow: 0 0 5px var(--accent-lightning); }
-
-        .skill-stats {
+        .support-gem {
+            background: #000;
+            border: 1px solid #444;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            transition: all 0.2s;
+            user-select: none;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            margin-bottom: 15px;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .support-gem:hover { border-color: #666; }
+        
+        /* Socket Logic Style */
+        .support-gem.active {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+            background: rgba(200, 170, 109, 0.1);
+            box-shadow: 0 0 10px rgba(200, 170, 109, 0.2);
+        }
+
+        .gem-icon {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            background: #444;
+            display: inline-block;
+        }
+        .support-gem.active .gem-icon { background: var(--accent-gold); box-shadow: 0 0 5px var(--accent-gold); }
+
+        /* Stats Display */
+        .stats-container {
+            background: #000;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid #333;
         }
 
         .stat-row {
             display: flex;
             justify-content: space-between;
-        }
-
-        .stat-val {
-            color: var(--text-main);
-        }
-
-        .skill-desc {
+            margin-bottom: 10px;
             font-size: 0.95rem;
-            line-height: 1.5;
-            color: #ccc;
-            font-style: italic;
+            border-bottom: 1px solid #1a1a1a;
+            padding-bottom: 5px;
         }
+        .stat-row:last-child { border-bottom: none; margin-bottom: 0; }
 
-        /* Footer */
-        .footer-note {
-            margin-top: 40px;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            text-align: center;
-        }
+        .stat-label { color: var(--text-muted); }
+        .stat-val-group { text-align: right; }
+        .base-val { color: #555; font-size: 0.85rem; margin-right: 8px; text-decoration: line-through; }
+        .final-val { font-weight: bold; color: var(--text-value); }
+        
+        .diff-indicator { font-size: 0.8rem; margin-left: 5px; }
+        .diff-pos { color: var(--accent-pos); }
+        .diff-neg { color: var(--accent-neg); }
+
+        .dps-row { margin-top: 15px; padding-top: 10px; border-top: 2px solid #333; }
+        .dps-val { font-size: 1.4rem; color: var(--accent-gold); }
+
     </style>
 </head>
 <body>
 
-    <h1>PoE2 Sorceress Spell DB</h1>
+    <h1>PoE2 Build Simulator</h1>
+    <div class="subtitle">Select a Skill Gem to visualize Support Gem effects</div>
 
-    <div class="controls">
-        <button class="filter-btn active" data-filter="all">All</button>
-        <button class="filter-btn" data-filter="Fire">Fire</button>
-        <button class="filter-btn" data-filter="Cold">Ice</button>
-        <button class="filter-btn" data-filter="Lightning">Lightning</button>
-    </div>
+    <div class="main-container">
+        <div class="skill-list" id="skillList">
+            </div>
 
-    <div id="skillContainer" class="skill-grid">
+        <div class="simulator-panel" id="simPanel">
+            <div class="panel-header">
+                <div class="panel-title" id="simTitle">Skill Name</div>
+                <div class="panel-desc" id="simDesc">Description here</div>
+            </div>
+
+            <div class="section-title">Socket Support Gems</div>
+            <div class="support-grid" id="supportGrid">
+                </div>
+
+            <div class="section-title">Calculation Results</div>
+            <div class="stats-container">
+                <div class="stat-row">
+                    <span class="stat-label">Hit Damage</span>
+                    <div class="stat-val-group" id="statDmg"></div>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Cast Time</span>
+                    <div class="stat-val-group" id="statCast"></div>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Mana Cost</span>
+                    <div class="stat-val-group" id="statMana"></div>
+                </div>
+                <div class="stat-row dps-row">
+                    <span class="stat-label">Estimated DPS</span>
+                    <div class="stat-val-group dps-val" id="statDPS"></div>
+                </div>
+            </div>
         </div>
-
-    <div class="footer-note">
-        Generated by PoE2 Technical Architect | Based on Path of Exile 2 Mechanics
     </div>
 
     <script>
-        // Database: PoE2 Sorceress Representative Skills
-        const skillDatabase = [
+        // --- 1. Database Definition ---
+        
+        const skills = [
             {
-                id: 1,
+                id: 'meteor',
                 name: "Meteor",
                 element: "Fire",
-                castTime: "1.20 sec",
+                tagClass: "tag-fire",
+                baseDamage: 1250,
+                castTime: 1.20,
                 manaCost: 45,
-                description: "空から巨大な隕石を召喚し、着弾地点の敵に壊滅的なFireダメージを与える。詠唱時間は長いが、スタン効果と広範囲への燃焼効果を持つ。",
-                tagClass: "tag-fire"
+                description: "巨大な隕石を召喚し、着弾地点に広範囲の壊滅的ダメージを与える。"
             },
             {
-                id: 2,
+                id: 'comet',
                 name: "Comet",
                 element: "Cold",
-                castTime: "0.90 sec",
+                tagClass: "tag-ice",
+                baseDamage: 850,
+                castTime: 0.90,
                 manaCost: 35,
-                description: "氷の塊を敵の頭上に落とし、Coldダメージと共に強力なChill（冷却）効果を与える。さらに地面を凍結させ、通過する敵の移動速度を低下させる。",
-                tagClass: "tag-ice"
+                description: "氷塊を落下させ、強力なChill効果と凍結床を生成する。"
             },
             {
-                id: 3,
+                id: 'spark',
                 name: "Spark",
                 element: "Lightning",
-                castTime: "0.65 sec",
+                tagClass: "tag-lightning",
+                baseDamage: 280,
+                castTime: 0.65,
                 manaCost: 18,
-                description: "ランダムな方向に移動する電気の球体を放つ。球体は壁や障害物に当たると跳ね返り、閉所での戦闘において高い制圧力を発揮する。",
-                tagClass: "tag-lightning"
+                description: "地形を反射する電撃球を放つ。閉所での制圧力が高い。"
             }
         ];
 
-        const container = document.getElementById('skillContainer');
-        const buttons = document.querySelectorAll('.filter-btn');
-
-        // Render Function
-        function renderSkills(filterType) {
-            container.innerHTML = '';
-            
-            const filteredSkills = filterType === 'all' 
-                ? skillDatabase 
-                : skillDatabase.filter(skill => skill.element === filterType);
-
-            if (filteredSkills.length === 0) {
-                container.innerHTML = '<p style="color:#888; grid-column: 1/-1; text-align:center;">No skills found.</p>';
-                return;
+        // Support Gems logic (Multipliers)
+        const supports = [
+            {
+                id: 'faster_casting',
+                name: "Faster Casting",
+                dmgMult: 1.0,      // No damage change
+                speedMult: 1.40,   // 40% Increased Cast Speed (Simulated as mult for simplicity)
+                manaMult: 1.20     // 120% Cost Multiplier
+            },
+            {
+                id: 'conc_effect',
+                name: "Conc. Effect",
+                dmgMult: 1.35,     // 35% More Damage
+                speedMult: 1.0,
+                manaMult: 1.40     // 140% Cost Multiplier
+            },
+            {
+                id: 'added_lightning',
+                name: "Added Lightning",
+                dmgMult: 1.20,     // Simplified: Adds flat dmg -> converted to roughly 20% more for demo
+                speedMult: 1.0,
+                manaMult: 1.30
+            },
+            {
+                id: 'controlled_dest',
+                name: "Controlled Dest.",
+                dmgMult: 1.25,     // 25% More Spell Damage
+                speedMult: 1.0,
+                manaMult: 1.30
             }
+        ];
 
-            filteredSkills.forEach(skill => {
+        // --- 2. State Management ---
+        
+        let currentSkill = null;
+        let activeSupports = new Set(); // Stores IDs of active supports
+
+        // --- 3. DOM Elements ---
+
+        const skillListEl = document.getElementById('skillList');
+        const simPanelEl = document.getElementById('simPanel');
+        const supportGridEl = document.getElementById('supportGrid');
+        
+        // Display Elements
+        const elTitle = document.getElementById('simTitle');
+        const elDesc = document.getElementById('simDesc');
+        const elStatDmg = document.getElementById('statDmg');
+        const elStatCast = document.getElementById('statCast');
+        const elStatMana = document.getElementById('statMana');
+        const elStatDPS = document.getElementById('statDPS');
+
+        // --- 4. Render Logic ---
+
+        function init() {
+            renderSkillList();
+            renderSupportGrid();
+        }
+
+        function renderSkillList() {
+            skillListEl.innerHTML = '';
+            skills.forEach(skill => {
                 const card = document.createElement('div');
-                card.className = 'skill-card';
+                card.className = `skill-card ${currentSkill && currentSkill.id === skill.id ? 'selected' : ''}`;
+                card.onclick = () => selectSkill(skill);
                 card.innerHTML = `
                     <div class="skill-header">
                         <span class="skill-name">${skill.name}</span>
                         <span class="element-tag ${skill.tagClass}">${skill.element}</span>
                     </div>
-                    <div class="skill-stats">
-                        <div class="stat-row">
-                            <span>Cast Time:</span>
-                            <span class="stat-val">${skill.castTime}</span>
-                        </div>
-                        <div class="stat-row">
-                            <span>Mana Cost:</span>
-                            <span class="stat-val">${skill.manaCost}</span>
-                        </div>
-                    </div>
-                    <div class="skill-desc">
-                        "${skill.description}"
-                    </div>
                 `;
-                container.appendChild(card);
+                skillListEl.appendChild(card);
             });
         }
 
-        // Event Listeners
-        buttons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                // UI Toggle
-                buttons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-
-                // Filter Logic
-                const filter = btn.getAttribute('data-filter');
-                renderSkills(filter);
+        function renderSupportGrid() {
+            supportGridEl.innerHTML = '';
+            supports.forEach(sup => {
+                const btn = document.createElement('div');
+                btn.className = `support-gem ${activeSupports.has(sup.id) ? 'active' : ''}`;
+                btn.onclick = () => toggleSupport(sup.id);
+                btn.innerHTML = `
+                    <span class="gem-icon"></span>
+                    <span>${sup.name}</span>
+                `;
+                supportGridEl.appendChild(btn);
             });
-        });
+        }
 
-        // Initial Load
-        renderSkills('all');
+        // --- 5. Interaction Logic ---
+
+        function selectSkill(skill) {
+            currentSkill = skill;
+            activeSupports.clear(); // Reset supports on skill switch
+            simPanelEl.classList.add('active');
+            
+            // Update UI
+            elTitle.innerText = skill.name;
+            elDesc.innerText = skill.description;
+            
+            renderSkillList(); // Refresh active class
+            renderSupportGrid();
+            calculate();
+        }
+
+        function toggleSupport(id) {
+            if (!currentSkill) return;
+
+            if (activeSupports.has(id)) {
+                activeSupports.delete(id);
+            } else {
+                activeSupports.add(id);
+            }
+            renderSupportGrid();
+            calculate();
+        }
+
+        // --- 6. Calculation Core ---
+
+        function calculate() {
+            if (!currentSkill) return;
+
+            // Base Stats
+            let bDmg = currentSkill.baseDamage;
+            let bCast = currentSkill.castTime;
+            let bMana = currentSkill.manaCost;
+
+            // Calculate Multipliers
+            let totalDmgMult = 1.0;
+            let totalSpeedMult = 1.0;
+            let totalManaMult = 1.0;
+
+            activeSupports.forEach(supId => {
+                const sup = supports.find(s => s.id === supId);
+                if (sup) {
+                    totalDmgMult *= sup.dmgMult;
+                    totalSpeedMult *= sup.speedMult;
+                    totalManaMult *= sup.manaMult;
+                }
+            });
+
+            // Final Stats
+            // Note: In PoE, "Increased Cast Speed" is usually CastTime / (1 + inc), 
+            // but for simple "More" logic here we use division by multiplier.
+            const fDmg = Math.floor(bDmg * totalDmgMult);
+            const fCast = parseFloat((bCast / totalSpeedMult).toFixed(2)); 
+            const fMana = Math.floor(bMana * totalManaMult);
+            
+            // DPS Calc
+            const bDPS = Math.floor(bDmg / bCast);
+            const fDPS = Math.floor(fDmg / fCast);
+
+            // Render Output
+            updateStatRow(elStatDmg, bDmg, fDmg, "");
+            updateStatRow(elStatCast, bCast, fCast, "sec", true); // true = lower is better
+            updateStatRow(elStatMana, bMana, fMana, "", true);   // true = lower is better
+            
+            // DPS specific rendering
+            elStatDPS.innerHTML = `
+                ${activeSupports.size > 0 ? `<span class="base-val">${bDPS}</span>` : ''}
+                <span class="final-val">${fDPS}</span>
+                ${getDiffHTML(bDPS, fDPS, false)}
+            `;
+        }
+
+        function updateStatRow(element, base, final, unit, lowerIsBetter = false) {
+            const hasChange = base !== final;
+            element.innerHTML = `
+                ${hasChange ? `<span class="base-val">${base}${unit}</span>` : ''}
+                <span class="final-val">${final}${unit}</span>
+                ${hasChange ? getDiffHTML(base, final, lowerIsBetter) : ''}
+            `;
+        }
+
+        function getDiffHTML(base, final, lowerIsBetter) {
+            const diff = final - base;
+            if (diff === 0) return '';
+            
+            // Determine Color
+            let isGood = lowerIsBetter ? diff < 0 : diff > 0;
+            const colorClass = isGood ? 'diff-pos' : 'diff-neg';
+            const sign = diff > 0 ? '+' : '';
+            
+            // Determine Percentage
+            const pct = ((diff / base) * 100).toFixed(0);
+
+            return `<span class="diff-indicator ${colorClass}">(${sign}${pct}%)</span>`;
+        }
+
+        // Initialize
+        init();
+
     </script>
 </body>
 </html>
-
