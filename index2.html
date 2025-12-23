@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoE2 Knowledge Base</title>
+    <style>
+        :root {
+            /* PoE2 Color Palette */
+            --bg-color: #050505;
+            --sidebar-bg: #0f0f0f;
+            --panel-bg: #141414;
+            --border-color: #3d352b;
+            --text-main: #dcd1b3; /* Parchment color */
+            --text-muted: #888;
+            --accent-gold: #c8aa6d;
+            --accent-red: #8b0000;
+            --highlight: #2a251e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Layout */
+        #app {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Sidebar */
+        aside {
+            width: 300px;
+            background-color: var(--sidebar-bg);
+            border-right: 2px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .search-container {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        #search-input {
+            width: 100%;
+            padding: 10px;
+            background-color: #000;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-size: 16px;
+        }
+
+        #search-input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+        }
+
+        .nav-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .category-header {
+            color: var(--accent-gold);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            padding-left: 10px;
+            border-bottom: 1px solid #333;
+        }
+
+        .nav-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+            font-size: 1.1rem;
+        }
+
+        .nav-item:hover {
+            background-color: var(--highlight);
+            color: #fff;
+        }
+
+        .nav-item.active {
+            background-color: var(--highlight);
+            border-left-color: var(--accent-red);
+            color: var(--accent-gold);
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%);
+            display: flex;
+            justify-content: center;
+        }
+
+        .content-panel {
+            max-width: 800px;
+            width: 100%;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            position: relative;
+        }
+
+        /* Decoration */
+        .content-panel::before {
+            content: '';
+            position: absolute;
+            top: 2px; left: 2px; right: 2px; bottom: 2px;
+            border: 1px solid #2a2a2a;
+            pointer-events: none;
+        }
+
+        h1 {
+            color: var(--accent-gold);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-family: 'Times New Roman', serif;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .meta-tag {
+            display: inline-block;
+            background-color: #222;
+            color: var(--text-muted);
+            padding: 4px 8px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+
+        .description {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            color: var(--text-main);
+        }
+
+        .placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-gold);
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <aside>
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="知識を検索..." autocomplete="off">
+        </div>
+        <div id="nav-container" class="nav-list">
+            </div>
+    </aside>
+
+    <main>
+        <div id="content-area" class="content-panel">
+            <div class="placeholder">左のメニューから項目を選択してください</div>
+        </div>
+    </main>
+</div>
+
+<script>
+    /**
+     * PoE2 Knowledge Database
+     * 拡張方法: knowledgeData配列にオブジェクトを追加してください。
+     * category: 'Story' | 'System' | 'Currency'
+     */
+    const knowledgeData = [
+        // --- Story ---
+        {
+            id: 'story-ogham',
+            category: 'Story',
+            title: 'Ogham (オガム)',
+            content: '『Path of Exile 2』の物語の序盤における重要な舞台の一つ。古代の荒廃した土地であり、プレイヤーキャラクターが最初に探索することになる地域の一つとされる。PoE1のWraeclastとは異なる文化様式や植生が見られ、新たな敵対勢力が存在する。'
+        },
+        {
+            id: 'story-exile',
+            category: 'Story',
+            title: 'Exile (追放者)',
+            content: '故郷を追われ、過酷な土地へ流刑に処された者たちの総称。PoE1ではOriathからの追放が主であったが、PoE2ではより広範な理由や背景を持つキャラクターたちが、生き残るために戦うことになる。「追放者」であることは変わらないが、その運命に対抗する手段は大きく進化している。'
+        },
+        
+        // --- System ---
+        {
+            id: 'sys-stats',
+            category: 'System',
+            title: '3つの基本能力値',
+            content: 'キャラクターの基礎を構成するStrength (筋力), Dexterity (敏捷), Intelligence (知性)の3属性。\n\n- **Strength (赤)**: 物理ダメージとライフを向上させる。\n- **Dexterity (緑)**: 攻撃速度、回避率、命中率に関与する。\n- **Intelligence (青)**: マナ、エナジーシールド、魔法攻撃力を司る。\n\nPoE2ではクラスごとにこれらの初期値や成長曲線が最適化されている。'
+        },
+        {
+            id: 'sys-uncut-gems',
+            category: 'System',
+            title: 'Uncut Gems (アンカット・ジェム)',
+            content: 'PoE2の核心的な新システム。スキルジェムはドロップ時点では「切削されていない（Uncut）」状態であり、アイテムとして入手する。プレイヤーはこのジェムを使用する際、メニューから任意のスキルを選択して「切削（Gem cutting）」し、スキルを獲得する。また、ジェムスロットは装備品ではなく「ジェム画面」自体に存在するため、装備更新時にリンクをつなぎ直す手間が排除されている。'
+        },
+        {
+            id: 'sys-dodge',
+            category: 'System',
+            title: 'Dodge Roll (回避アクション)',
+            content: 'PoE2の全クラスに標準搭載されたアクション。スペースバー（デフォルト）で発動し、指定方向へ転がり移動を行う。発動中は敵の攻撃を物理的に回避できるだけでなく、スタン（気絶）状態をキャンセルする効果も持つ。これにはクールダウンが存在しないが、連続使用には制限がある場合がある（またはアニメーションの硬直）。戦闘の流動性を高めるための重要なメカニクス。'
+        },
+
+        // --- Currency ---
+        {
+            id: 'curr-barter',
+            category: 'Currency',
+            title: 'Gold & Currency (経済)',
+            content: 'PoE2では、PoE1には（基本）存在しなかった「ゴールド（Gold）」がドロップする。これは主にNPCとの取引や、リスペック（パッシブスキルの振り直し）コストとして消費される。\n\n一方で、プレイヤー間のトレードやクラフトには依然として「Chaos Orb」や「Alchemy Orb」といった通貨アイテム（Currency）が使用される。つまり、日常的なコストはゴールド、資産価値やクラフトはオーブという住み分けがなされている。'
+        }
+    ];
+
+    // DOM Elements
+    const navContainer = document.getElementById('nav-container');
+    const contentArea = document.getElementById('content-area');
+    const searchInput = document.getElementById('search-input');
+
+    // State
+    let currentSelectionId = null;
+
+    /**
+     * Render the sidebar navigation based on data
+     * @param {string} filterText - Text to filter the list
+     */
+    function renderNavigation(filterText = '') {
+        navContainer.innerHTML = '';
+        
+        // Group by category
+        const categories = ['Story', 'System', 'Currency'];
+        const groupedData = {};
+
+        categories.forEach(cat => {
+            groupedData[cat] = knowledgeData.filter(item => 
+                item.category === cat && 
+                (item.title.toLowerCase().includes(filterText.toLowerCase()) || 
+                 item.content.toLowerCase().includes(filterText.toLowerCase()))
+            );
+        });
+
+        // Build HTML
+        categories.forEach(cat => {
+            if (groupedData[cat].length > 0) {
+                const header = document.createElement('div');
+                header.className = 'category-header';
+                header.textContent = cat;
+                navContainer.appendChild(header);
+
+                groupedData[cat].forEach(item => {
+                    const navItem = document.createElement('div');
+                    navItem.className = `nav-item ${item.id === currentSelectionId ? 'active' : ''}`;
+                    navItem.textContent = item.title;
+                    navItem.onclick = () => selectItem(item);
+                    navContainer.appendChild(navItem);
+                });
+            }
+        });
+    }
+
+    /**
+     * Display content in the main area
+     * @param {object} item - The data object to display
+     */
+    function selectItem(item) {
+        currentSelectionId = item.id;
+        
+        // Re-render nav to update active state
+        renderNavigation(searchInput.value);
+
+        // Render Content
+        // Convert newlines to <br> for basic formatting
+        const formattedContent = item.content.replace(/\n/g, '<br>');
+
+        contentArea.innerHTML = `
+            <span class="meta-tag">${item.category}</span>
+            <h1>${item.title}</h1>
+            <div class="description">${formattedContent}</div>
+        `;
+    }
+
+    // Search Event Listener
+    searchInput.addEventListener('input', (e) => {
+        renderNavigation(e.target.value);
+    });
+
+    // Initial Render
+    renderNavigation();
+
+</script>
+
+</body>
+</html>
