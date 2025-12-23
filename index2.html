@@ -2,27 +2,23 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PoE2 Knowledge Base</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PoE2 Knowledge Base (Mobile Ready)</title>
     <style>
         :root {
-            /* PoE2 Color Palette */
             --bg-color: #050505;
             --sidebar-bg: #0f0f0f;
             --panel-bg: #141414;
             --border-color: #3d352b;
-            --text-main: #dcd1b3; /* Parchment color */
+            --text-main: #dcd1b3;
             --text-muted: #888;
             --accent-gold: #c8aa6d;
             --accent-red: #8b0000;
             --highlight: #2a251e;
+            --sidebar-width: 300px;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -33,221 +29,224 @@
             overflow: hidden;
         }
 
-        /* Layout */
-        #app {
-            display: flex;
-            width: 100%;
-            height: 100%;
+        /* --- Mobile Header (Visible only on mobile) --- */
+        .mobile-header {
+            display: none;
+            height: 60px;
+            background-color: var(--sidebar-bg);
+            border-bottom: 1px solid var(--border-color);
+            align-items: center;
+            padding: 0 20px;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
         }
 
-        /* Sidebar */
+        .menu-toggle {
+            font-size: 24px;
+            color: var(--accent-gold);
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            padding: 5px 10px;
+            background: #000;
+        }
+
+        .mobile-title {
+            margin-left: 15px;
+            font-weight: bold;
+            color: var(--accent-gold);
+        }
+
+        /* --- Layout --- */
+        #app { display: flex; width: 100%; height: 100%; position: relative; }
+
+        /* --- Sidebar --- */
         aside {
-            width: 300px;
+            width: var(--sidebar-width);
             background-color: var(--sidebar-bg);
             border-right: 2px solid var(--border-color);
             display: flex;
             flex-direction: column;
+            transition: transform 0.3s ease;
+            z-index: 90;
         }
 
-        .search-container {
-            padding: 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
+        .search-container { padding: 20px; border-bottom: 1px solid var(--border-color); }
+        
         #search-input {
-            width: 100%;
-            padding: 10px;
-            background-color: #000;
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            font-size: 16px;
+            width: 100%; padding: 10px;
+            background-color: #000; border: 1px solid var(--border-color);
+            color: var(--text-main); font-size: 16px;
         }
+        #search-input:focus { outline: none; border-color: var(--accent-gold); }
 
-        #search-input:focus {
-            outline: none;
-            border-color: var(--accent-gold);
-        }
-
-        .nav-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px;
-        }
+        .nav-list { flex: 1; overflow-y: auto; padding: 10px; padding-bottom: 80px; }
 
         .category-header {
-            color: var(--accent-gold);
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 15px;
-            margin-bottom: 5px;
-            padding-left: 10px;
-            border-bottom: 1px solid #333;
+            color: var(--accent-gold); font-size: 0.85rem; text-transform: uppercase;
+            letter-spacing: 1px; margin-top: 20px; margin-bottom: 5px;
+            padding-left: 10px; border-bottom: 1px solid #333;
         }
 
         .nav-item {
-            padding: 12px 15px;
-            cursor: pointer;
-            border-left: 3px solid transparent;
-            transition: all 0.2s;
-            font-size: 1.1rem;
+            padding: 14px 15px; cursor: pointer; border-left: 3px solid transparent;
+            transition: all 0.2s; font-size: 1rem; border-bottom: 1px solid #1a1a1a;
         }
+        .nav-item:hover { background-color: var(--highlight); color: #fff; }
+        .nav-item.active { background-color: var(--highlight); border-left-color: var(--accent-red); color: var(--accent-gold); }
 
-        .nav-item:hover {
-            background-color: var(--highlight);
-            color: #fff;
-        }
-
-        .nav-item.active {
-            background-color: var(--highlight);
-            border-left-color: var(--accent-red);
-            color: var(--accent-gold);
-        }
-
-        /* Main Content */
+        /* --- Main Content --- */
         main {
-            flex: 1;
-            padding: 40px;
-            overflow-y: auto;
+            flex: 1; padding: 40px; overflow-y: auto;
             background: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%);
-            display: flex;
-            justify-content: center;
+            display: flex; justify-content: center;
         }
 
         .content-panel {
-            max-width: 800px;
-            width: 100%;
-            background-color: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            padding: 40px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
-            position: relative;
+            max-width: 800px; width: 100%; height: fit-content;
+            background-color: var(--panel-bg); border: 1px solid var(--border-color);
+            padding: 40px; box-shadow: 0 0 20px rgba(0,0,0,0.8); position: relative;
         }
 
-        /* Decoration */
         .content-panel::before {
-            content: '';
-            position: absolute;
+            content: ''; position: absolute;
             top: 2px; left: 2px; right: 2px; bottom: 2px;
-            border: 1px solid #2a2a2a;
-            pointer-events: none;
+            border: 1px solid #2a2a2a; pointer-events: none;
         }
 
         h1 {
-            color: var(--accent-gold);
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            font-family: 'Times New Roman', serif;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
+            color: var(--accent-gold); font-size: 2.2rem; margin-bottom: 10px;
+            font-family: 'Times New Roman', serif; border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px; line-height: 1.2;
         }
 
         .meta-tag {
-            display: inline-block;
-            background-color: #222;
-            color: var(--text-muted);
-            padding: 4px 8px;
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-            border: 1px solid #333;
+            display: inline-block; background-color: #222; color: var(--text-muted);
+            padding: 4px 8px; font-size: 0.85rem; margin-bottom: 15px; border: 1px solid #333;
         }
 
-        .description {
-            font-size: 1.2rem;
-            line-height: 1.8;
-            color: var(--text-main);
-        }
+        .description { font-size: 1.1rem; line-height: 1.7; color: var(--text-main); }
+        
+        .placeholder { display: flex; align-items: center; justify-content: center; height: 200px; color: var(--text-muted); font-style: italic; }
 
-        .placeholder {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: var(--text-muted);
-            font-style: italic;
-        }
+        /* --- Mobile Responsive Styles --- */
+        @media (max-width: 768px) {
+            body { flex-direction: column; padding-top: 60px; /* Header height */ }
+            .mobile-header { display: flex; }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #000;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #333;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--accent-gold);
-        }
+            aside {
+                position: fixed; top: 60px; left: 0; bottom: 0;
+                width: 100%; transform: translateX(-100%);
+            }
+            aside.open { transform: translateX(0); }
 
+            main { padding: 15px; }
+            .content-panel { padding: 20px; margin-bottom: 40px; }
+            h1 { font-size: 1.8rem; }
+            .description { font-size: 1rem; }
+        }
     </style>
 </head>
 <body>
 
+<div class="mobile-header">
+    <div class="menu-toggle" onclick="toggleSidebar()">☰</div>
+    <div class="mobile-title">PoE2 Codex</div>
+</div>
+
 <div id="app">
-    <aside>
+    <aside id="sidebar">
         <div class="search-container">
-            <input type="text" id="search-input" placeholder="知識を検索..." autocomplete="off">
+            <input type="text" id="search-input" placeholder="Search..." autocomplete="off">
         </div>
         <div id="nav-container" class="nav-list">
             </div>
     </aside>
 
-    <main>
+    <main onclick="closeSidebarOutside()">
         <div id="content-area" class="content-panel">
-            <div class="placeholder">左のメニューから項目を選択してください</div>
+            <div class="placeholder">メニューから項目を選択してください</div>
         </div>
     </main>
 </div>
 
 <script>
-    /**
-     * PoE2 Knowledge Database
-     * 拡張方法: knowledgeData配列にオブジェクトを追加してください。
-     * category: 'Story' | 'System' | 'Currency'
-     */
+    /* Data Structure:
+      Expanded to include all 12 classes and major PoE1 changes.
+    */
     const knowledgeData = [
-        // --- Story ---
+        // --- System Changes (PoE1 vs PoE2) ---
         {
-            id: 'story-ogham',
-            category: 'Story',
-            title: 'Ogham (オガム)',
-            content: '『Path of Exile 2』の物語の序盤における重要な舞台の一つ。古代の荒廃した土地であり、プレイヤーキャラクターが最初に探索することになる地域の一つとされる。PoE1のWraeclastとは異なる文化様式や植生が見られ、新たな敵対勢力が存在する。'
+            id: 'chg-spirit', category: 'Changes (PoE1)', title: 'Spirit System',
+            content: 'PoE1のマナ予約（Mana Reservation）に代わる新リソース。オーラやヘラルド、ミニオンの維持には「Spirit」を使用する。これにより、マナはスキルの使用のみに専念できるようになり、リザーブによる「マナ枯渇」問題が解消された。Spiritの上限はアイテムやパッシブで増やす必要がある。'
         },
         {
-            id: 'story-exile',
-            category: 'Story',
-            title: 'Exile (追放者)',
-            content: '故郷を追われ、過酷な土地へ流刑に処された者たちの総称。PoE1ではOriathからの追放が主であったが、PoE2ではより広範な理由や背景を持つキャラクターたちが、生き残るために戦うことになる。「追放者」であることは変わらないが、その運命に対抗する手段は大きく進化している。'
-        },
-        
-        // --- System ---
-        {
-            id: 'sys-stats',
-            category: 'System',
-            title: '3つの基本能力値',
-            content: 'キャラクターの基礎を構成するStrength (筋力), Dexterity (敏捷), Intelligence (知性)の3属性。\n\n- **Strength (赤)**: 物理ダメージとライフを向上させる。\n- **Dexterity (緑)**: 攻撃速度、回避率、命中率に関与する。\n- **Intelligence (青)**: マナ、エナジーシールド、魔法攻撃力を司る。\n\nPoE2ではクラスごとにこれらの初期値や成長曲線が最適化されている。'
+            id: 'chg-sockets', category: 'Changes (PoE1)', title: 'Gem & Sockets',
+            content: '装備品にはもはやソケットが存在しない（指輪などに一部例外あり）。代わりに「アクティブスキルジェム」自体にサポートジェム用のソケットが存在する。これにより、ボディアーマーを変えても6リンクスキルをそのまま維持できる。リンクの数はジェムのレベルやアイテムレベルに依存する。'
         },
         {
-            id: 'sys-uncut-gems',
-            category: 'System',
-            title: 'Uncut Gems (アンカット・ジェム)',
-            content: 'PoE2の核心的な新システム。スキルジェムはドロップ時点では「切削されていない（Uncut）」状態であり、アイテムとして入手する。プレイヤーはこのジェムを使用する際、メニューから任意のスキルを選択して「切削（Gem cutting）」し、スキルを獲得する。また、ジェムスロットは装備品ではなく「ジェム画面」自体に存在するため、装備更新時にリンクをつなぎ直す手間が排除されている。'
-        },
-        {
-            id: 'sys-dodge',
-            category: 'System',
-            title: 'Dodge Roll (回避アクション)',
-            content: 'PoE2の全クラスに標準搭載されたアクション。スペースバー（デフォルト）で発動し、指定方向へ転がり移動を行う。発動中は敵の攻撃を物理的に回避できるだけでなく、スタン（気絶）状態をキャンセルする効果も持つ。これにはクールダウンが存在しないが、連続使用には制限がある場合がある（またはアニメーションの硬直）。戦闘の流動性を高めるための重要なメカニクス。'
+            id: 'chg-respec', category: 'Changes (PoE1)', title: 'Respec w/ Gold',
+            content: 'パッシブスキルの振り直しには「Gold」を使用する。後悔のオーブ（Orb of Regret）は存在しないか、別の用途になる。レベルが低い間の振り直しコストは安く、エンドゲームに近づくにつれて高額になる設計。'
         },
 
-        // --- Currency ---
+        // --- Classes: STR ---
         {
-            id: 'curr-barter',
-            category: 'Currency',
-            title: 'Gold & Currency (経済)',
-            content: 'PoE2では、PoE1には（基本）存在しなかった「ゴールド（Gold）」がドロップする。これは主にNPCとの取引や、リスペック（パッシブスキルの振り直し）コストとして消費される。\n\n一方で、プレイヤー間のトレードやクラフトには依然として「Chaos Orb」や「Alchemy Orb」といった通貨アイテム（Currency）が使用される。つまり、日常的なコストはゴールド、資産価値やクラフトはオーブという住み分けがなされている。'
+            id: 'cls-marauder', category: 'Class: STR', title: 'Marauder',
+            content: 'PoE1からの続投クラス。純粋な力（Strength）を象徴する。重い武器、特に「斧（Axes）」の扱いに長ける。祖先の怒りを力に変えるスタイルは健在だが、PoE2ではよりダイナミックな戦闘アニメーションを持つ。'
+        },
+        {
+            id: 'cls-warrior', category: 'Class: STR', title: 'Warrior (New)',
+            content: '新クラス。Marauder同様にStrengthベースだが、より「戦術的な重装歩兵」の側面が強い。「メイス（Maces）」や「ハンマー」を用い、地面を叩きつけるスラム（Slams）攻撃や、ウォークライ（Warcries）によるバフ・デバフ制御を得意とする。'
+        },
+
+        // --- Classes: DEX ---
+        {
+            id: 'cls-ranger', category: 'Class: DEX', title: 'Ranger',
+            content: 'PoE1からの続投クラス。敏捷性（Dexterity）の象徴。依然として「弓（Bows）」のスペシャリストだが、移動しながらの射撃や、植物・自然の力を借りた攻撃など、機動力が大幅に強化されている。'
+        },
+        {
+            id: 'cls-huntress', category: 'Class: DEX', title: 'Huntress (New)',
+            content: '新クラス。Dexterityベース。主な武器は「槍（Spears）」。近接攻撃と投擲攻撃をシームレスに切り替えるスタイルを持つ。野生の猛獣と共に戦う要素や、生存能力（Survival）に長けたスキルセットを持つ。'
+        },
+
+        // --- Classes: INT ---
+        {
+            id: 'cls-witch', category: 'Class: INT', title: 'Witch',
+            content: 'PoE1からの続投クラス。知性（Intelligence）の象徴。「ミニオン（召喚）」と「オカルト魔法（Chaos/DoT）」の達人。死霊術により、倒した敵を即座に使役するなど、ミニオン管理のメカニクスが進化している。'
+        },
+        {
+            id: 'cls-sorceress', category: 'Class: INT', title: 'Sorceress (New)',
+            content: '新クラス。Intelligenceベース。純粋な「エレメンタル魔法（Fire, Cold, Lightning）」の破壊力を追求するクラス。Witchが闇や召喚寄りなのに対し、Sorceressは天候を操り、広範囲を殲滅するキャスターとしてデザインされている。'
+        },
+
+        // --- Classes: STR/DEX ---
+        {
+            id: 'cls-duelist', category: 'Class: STR/DEX', title: 'Duelist',
+            content: 'PoE1からの続投クラス。剣技の達人。近接戦闘における回避と攻撃のバランスに優れる。「剣（Swords）」を用いた高速な連撃や、カウンター技が特徴。'
+        },
+        {
+            id: 'cls-mercenary', category: 'Class: STR/DEX', title: 'Mercenary (New)',
+            content: '新クラス。「クロスボウ（Crossbows）」を使用する特殊なクラス。このクラスのみ、WASD移動とマウスエイムによるTPS（サードパーソンシューティング）のような操作感が標準となる。「特殊弾薬」や「グレネードランチャー」を換装して戦う。'
+        },
+
+        // --- Classes: INT/DEX ---
+        {
+            id: 'cls-shadow', category: 'Class: INT/DEX', title: 'Shadow',
+            content: 'PoE1からの続投クラス。暗殺者。「ダガー（Daggers）」と「罠（Traps）」のスペシャリスト。クリティカル攻撃や状態異常毒（Poison）を駆使し、テクニカルに敵を排除する。'
+        },
+        {
+            id: 'cls-monk', category: 'Class: INT/DEX', title: 'Monk (New)',
+            content: '新クラス。高い機動力を持つ武道家。「素手（Unarmed）」または「クォータースタッフ（Quarterstaves）」を使用する。流れるようなコンボ攻撃と、氷や風の元素を纏った体術が特徴。ヒットアンドアウェイの極致。'
+        },
+
+        // --- Classes: STR/INT ---
+        {
+            id: 'cls-templar', category: 'Class: STR/INT', title: 'Templar',
+            content: 'PoE1からの続投クラス。信仰と武力の融合。「盾（Shields）」と属性近接攻撃、または魔法を併用する。防御力と攻撃力を兼ね備えたハイブリッドな戦い方を得意とする。'
+        },
+        {
+            id: 'cls-druid', category: 'Class: STR/INT', title: 'Druid (New)',
+            content: '新クラス。自然の猛威を体現する。「変身（Shapeshifting）」が最大の特徴で、熊（Bear）になって耐久と物理攻撃を得たり、狼（Wolf）になって素早く敵を切り裂く。変身中も魔法をキャストできるハイブリッドな運用が可能。'
         }
     ];
 
@@ -255,21 +254,26 @@
     const navContainer = document.getElementById('nav-container');
     const contentArea = document.getElementById('content-area');
     const searchInput = document.getElementById('search-input');
+    const sidebar = document.getElementById('sidebar');
 
-    // State
     let currentSelectionId = null;
 
-    /**
-     * Render the sidebar navigation based on data
-     * @param {string} filterText - Text to filter the list
-     */
+    // --- Navigation Logic ---
     function renderNavigation(filterText = '') {
         navContainer.innerHTML = '';
         
-        // Group by category
-        const categories = ['Story', 'System', 'Currency'];
-        const groupedData = {};
+        // Dynamic Category Extraction
+        const categories = [...new Set(knowledgeData.map(item => item.category))];
+        
+        // Define explicit order if needed, otherwise use alphabetical/insertion order
+        // sort categories so 'Class' come together, 'Changes' first
+        categories.sort((a, b) => {
+            if(a.includes('Changes')) return -1;
+            if(b.includes('Changes')) return 1;
+            return a.localeCompare(b);
+        });
 
+        const groupedData = {};
         categories.forEach(cat => {
             groupedData[cat] = knowledgeData.filter(item => 
                 item.category === cat && 
@@ -278,7 +282,6 @@
             );
         });
 
-        // Build HTML
         categories.forEach(cat => {
             if (groupedData[cat].length > 0) {
                 const header = document.createElement('div');
@@ -290,43 +293,50 @@
                     const navItem = document.createElement('div');
                     navItem.className = `nav-item ${item.id === currentSelectionId ? 'active' : ''}`;
                     navItem.textContent = item.title;
-                    navItem.onclick = () => selectItem(item);
+                    navItem.onclick = (e) => {
+                        e.stopPropagation(); // prevent main click
+                        selectItem(item);
+                        if(window.innerWidth <= 768) toggleSidebar(); // close sidebar on mobile
+                    };
                     navContainer.appendChild(navItem);
                 });
             }
         });
     }
 
-    /**
-     * Display content in the main area
-     * @param {object} item - The data object to display
-     */
     function selectItem(item) {
         currentSelectionId = item.id;
+        renderNavigation(searchInput.value); // refresh active state
         
-        // Re-render nav to update active state
-        renderNavigation(searchInput.value);
-
-        // Render Content
-        // Convert newlines to <br> for basic formatting
         const formattedContent = item.content.replace(/\n/g, '<br>');
-
+        
         contentArea.innerHTML = `
             <span class="meta-tag">${item.category}</span>
             <h1>${item.title}</h1>
             <div class="description">${formattedContent}</div>
         `;
+        
+        // Scroll to top of content
+        document.querySelector('main').scrollTop = 0;
     }
 
-    // Search Event Listener
-    searchInput.addEventListener('input', (e) => {
-        renderNavigation(e.target.value);
-    });
+    // --- Mobile UI Logic ---
+    function toggleSidebar() {
+        sidebar.classList.toggle('open');
+    }
 
+    function closeSidebarOutside() {
+        if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+            sidebar.classList.remove('open');
+        }
+    }
+
+    // --- Events ---
+    searchInput.addEventListener('input', (e) => renderNavigation(e.target.value));
+    
     // Initial Render
     renderNavigation();
 
 </script>
-
 </body>
 </html>
