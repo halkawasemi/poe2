@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PoE2 Build Simulator v3.0 - Gear Integration</title>
+    <title>PoE2 Build Simulator v4.0 - Spirit & Auras</title>
     <style>
         :root {
             --bg-color: #0b0b0b;
             --panel-bg: #141414;
-            --input-bg: #000;
+            --input-bg: #050505;
             --card-bg: #1a1a1a;
             --text-main: #dcdcdc;
             --text-muted: #888;
@@ -17,8 +17,8 @@
             --accent-fire: #b7362a;
             --accent-ice: #3a7caf;
             --accent-lightning: #d4b924;
-            --accent-pos: #4ece70;
-            --accent-neg: #d14e4e;
+            --accent-spirit: #e0e0e0; /* Spirit Color (Ghostly White) */
+            --spirit-bar-bg: #333;
             --border-color: #333;
         }
 
@@ -37,9 +37,8 @@
             align-items: flex-start;
         }
 
-        /* 1. Skill Selection */
+        /* --- 1. Skill Selection (Left) --- */
         .col-left { flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 10px; }
-        
         .skill-card {
             background-color: var(--card-bg); border: 1px solid var(--border-color); padding: 15px; cursor: pointer; transition: all 0.2s;
             display: flex; justify-content: space-between; align-items: center;
@@ -51,16 +50,39 @@
         .tag-ice { color: var(--accent-ice); font-weight: bold; font-size: 0.8rem; }
         .tag-lightning { color: var(--accent-lightning); font-weight: bold; font-size: 0.8rem; }
 
-        /* 2. Configuration Panel (Middle) */
-        .col-center { flex: 2; min-width: 300px; background-color: var(--panel-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 4px; }
+        /* --- 2. Configuration (Center) --- */
+        .col-center { flex: 2; min-width: 340px; background-color: var(--panel-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 4px; }
 
         .section-header { 
-            color: var(--accent-gold); font-size: 0.95rem; text-transform: uppercase; margin-bottom: 15px; 
-            border-bottom: 1px solid #333; padding-bottom: 5px; display: flex; justify-content: space-between;
+            color: var(--accent-gold); font-size: 0.95rem; text-transform: uppercase; margin-bottom: 15px; margin-top: 25px;
+            border-bottom: 1px solid #333; padding-bottom: 5px; display: flex; justify-content: space-between; align-items: center;
         }
+        .section-header:first-child { margin-top: 0; }
 
-        /* Input Forms */
-        .input-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        /* Spirit Bar Styles */
+        .spirit-container { margin-bottom: 20px; background: #000; padding: 15px; border: 1px solid #333; border-radius: 4px; }
+        .spirit-info { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
+        .spirit-bar-track { width: 100%; height: 8px; background: var(--spirit-bar-bg); border-radius: 4px; overflow: hidden; }
+        .spirit-bar-fill { height: 100%; background: var(--accent-spirit); width: 0%; transition: width 0.3s ease; }
+        .spirit-bar-fill.full { background: var(--accent-fire); } /* Warning color if full */
+
+        .aura-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+        .aura-btn {
+            background: #111; border: 1px solid #444; padding: 10px; border-radius: 3px; cursor: pointer; text-align: left;
+            transition: all 0.2s; position: relative; overflow: hidden;
+        }
+        .aura-btn:hover { border-color: #666; }
+        .aura-btn.active { border-color: var(--accent-spirit); background: #222; }
+        .aura-btn.disabled { opacity: 0.5; cursor: not-allowed; border-color: #222; }
+        .aura-name { font-size: 0.85rem; font-weight: bold; color: #ddd; display: block; }
+        .aura-cost { font-size: 0.75rem; color: #888; margin-top: 3px; display: block; }
+        .aura-indicator { 
+            position: absolute; top: 0; right: 0; width: 0; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05)); transition: width 0.3s; 
+        }
+        .aura-btn.active .aura-indicator { width: 100%; }
+
+        /* Inputs */
+        .input-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px; }
         .input-item { display: flex; flex-direction: column; gap: 5px; }
         .input-label { font-size: 0.8rem; color: var(--text-muted); }
         .input-field { 
@@ -69,88 +91,94 @@
         }
         .input-field:focus { outline: none; border-color: var(--accent-gold); }
 
-        /* Support Gems Grid */
-        .support-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+        /* Support Gems */
+        .support-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
         .support-gem {
-            background: #000; border: 1px solid #333; padding: 10px; border-radius: 3px; cursor: pointer; text-align: center;
+            background: #000; border: 1px solid #333; padding: 8px; border-radius: 3px; cursor: pointer; text-align: center;
             font-size: 0.8rem; color: #888; transition: all 0.2s;
         }
-        .support-gem:hover { border-color: #666; }
-        .support-gem.active {
-            border-color: var(--accent-gold); color: var(--accent-gold); background: rgba(200, 170, 109, 0.05);
-        }
+        .support-gem.active { border-color: var(--accent-gold); color: var(--accent-gold); background: rgba(200, 170, 109, 0.05); }
 
-        /* 3. Results Panel (Right) */
+        /* --- 3. Results (Right) --- */
         .col-right { flex: 1.5; min-width: 280px; display: flex; flex-direction: column; gap: 15px; }
-
         .stats-card { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 4px; }
         .stat-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.9rem; border-bottom: 1px solid #222; padding-bottom: 8px; }
         .stat-label { color: #888; }
         .stat-val { color: #fff; font-weight: bold; }
-        .stat-sub { font-size: 0.75rem; color: #555; }
-
         .highlight-dps { color: var(--accent-gold); font-size: 1.4rem; }
         .highlight-dot { color: var(--accent-fire); font-size: 1.1rem; }
-        
-        /* Math breakdown tooltip style */
-        .formula-preview { font-family: monospace; font-size: 0.75rem; color: #555; margin-top: 5px; word-break: break-all; }
+        .formula-preview { font-family: monospace; font-size: 0.7rem; color: #555; margin-top: 5px; word-break: break-all; line-height: 1.4; }
 
     </style>
 </head>
 <body>
 
     <h1>PoE2 Build Simulator</h1>
-    <span class="version-tag">v3.0 Equipment Integration</span>
+    <span class="version-tag">v4.0 Spirit Integration</span>
 
     <div class="main-container">
         
-        <div class="col-left" id="skillList">
-            </div>
+        <div class="col-left" id="skillList"></div>
 
         <div class="col-center">
             
             <div class="section-header">
-                <span>Equipment Stats (Additive)</span>
-                <span style="font-size:0.7rem; color:#666;">GEAR MODIFIERS</span>
+                <span>Spirit Reservation</span>
+                <span style="font-size:0.7rem; color:#666;">AURAS & BUFFS</span>
             </div>
-            
+            <div class="spirit-container">
+                <div class="spirit-info">
+                    <span style="color: var(--accent-spirit);">Spirit Usage</span>
+                    <span id="spiritText">0 / 100</span>
+                </div>
+                <div class="spirit-bar-track">
+                    <div class="spirit-bar-fill" id="spiritBar"></div>
+                </div>
+                <div style="margin-top:10px; font-size:0.8rem; text-align:right; color:#666;">
+                    Max Spirit: <input type="number" id="in_maxSpirit" value="100" style="width:50px; background:#111; border:1px solid #333; color:#aaa; text-align:center;">
+                </div>
+            </div>
+            <div class="aura-grid" id="auraGrid"></div>
+
+            <div class="section-header">
+                <span>Gear & Passive Stats</span>
+                <span style="font-size:0.7rem; color:#666;">ADDITIVE</span>
+            </div>
             <div class="input-group">
                 <div class="input-item">
                     <label class="input-label">% Inc. Spell Damage</label>
-                    <input type="number" id="in_incDmg" class="input-field" value="0" min="0" step="5">
+                    <input type="number" id="in_incDmg" class="input-field" value="20" min="0" step="5">
                 </div>
                 <div class="input-item">
                     <label class="input-label">% Inc. Cast Speed</label>
-                    <input type="number" id="in_incSpeed" class="input-field" value="0" min="0" step="1">
+                    <input type="number" id="in_incSpeed" class="input-field" value="10" min="0" step="1">
                 </div>
                 <div class="input-item">
                     <label class="input-label">+ Flat Added Damage</label>
-                    <input type="number" id="in_flatDmg" class="input-field" value="0" min="0" step="10">
+                    <input type="number" id="in_flatDmg" class="input-field" value="15" min="0" step="5">
                 </div>
             </div>
 
             <div class="section-header">
-                <span>Support Gems (Multiplicative)</span>
-                <span style="font-size:0.7rem; color:#666;">MORE MULTIPLIERS</span>
+                <span>Support Gems</span>
+                <span style="font-size:0.7rem; color:#666;">MULTIPLICATIVE</span>
             </div>
-            <div class="support-grid" id="supportGrid">
-                </div>
+            <div class="support-grid" id="supportGrid"></div>
 
         </div>
 
         <div class="col-right">
             <div class="stats-card">
-                <div class="section-header">Final Calculation</div>
-                
+                <div class="section-header">Metrics</div>
                 <div class="stat-row">
-                    <span class="stat-label">Total Hit Damage</span>
+                    <span class="stat-label">Hit Damage</span>
                     <span class="stat-val" id="out_hitDmg">0</span>
                 </div>
                 <div class="stat-row">
                     <span class="stat-label">Cast Rate</span>
                     <div>
                         <span class="stat-val" id="out_castRate">0.00</span>
-                        <span class="stat-sub"> / sec</span>
+                        <span style="font-size:0.75rem; color:#555;"> / sec</span>
                     </div>
                 </div>
                 <div class="stat-row">
@@ -159,14 +187,20 @@
                 </div>
 
                 <div style="margin-top:20px; border-top: 1px solid #333; padding-top:10px;">
-                    <span class="stat-label">Estimated Hit DPS</span>
+                    <span class="stat-label">Hit DPS</span>
                     <div class="highlight-dps" id="out_dps">0</div>
-                    <div class="formula-preview" id="out_formula"></div>
                 </div>
 
                 <div id="dotSection" style="margin-top:15px; border-top: 1px dotted #333; padding-top:10px; display:none;">
-                    <span class="stat-label">Ailment DoT (Ignite)</span>
+                    <span class="stat-label">Ailment DoT</span>
                     <div class="highlight-dot" id="out_dot">0</div>
+                </div>
+                
+                <div style="margin-top:15px; background:#111; padding:10px; border-radius:4px;">
+                    <div style="color:#666; font-size:0.7rem; margin-bottom:5px;">LOGIC BREAKDOWN</div>
+                    <div class="formula-preview" id="out_formula_base"></div>
+                    <div class="formula-preview" id="out_formula_inc"></div>
+                    <div class="formula-preview" id="out_formula_more"></div>
                 </div>
             </div>
         </div>
@@ -174,7 +208,7 @@
     </div>
 
     <script>
-        // --- Data ---
+        // --- Database ---
         const skills = [
             { id: 'meteor', name: "Meteor", element: "Fire", baseDmg: 1250, castTime: 1.20, mana: 45, ailment: 0.9, tagClass: 'tag-fire' },
             { id: 'comet', name: "Comet", element: "Cold", baseDmg: 850, castTime: 0.90, mana: 35, ailment: 0, tagClass: 'tag-ice' },
@@ -182,40 +216,42 @@
         ];
 
         const supports = [
-            { id: 'faster', name: "Faster Casting", moreDmg: 1.0, moreSpeed: 1.40, manaMult: 1.2 },
+            { id: 'faster', name: "Faster Cast", moreDmg: 1.0, moreSpeed: 1.40, manaMult: 1.2 },
             { id: 'conc', name: "Conc. Effect", moreDmg: 1.35, moreSpeed: 1.0, manaMult: 1.4 },
-            { id: 'control', name: "Controlled Dest.", moreDmg: 1.25, moreSpeed: 1.0, manaMult: 1.3 },
-            { id: 'deadly', name: "Deadly Ailments", moreDmg: 0.20, moreSpeed: 1.0, manaMult: 1.0, dotMore: 1.45 } // dotMore is specific
+            { id: 'control', name: "Control Dest", moreDmg: 1.25, moreSpeed: 1.0, manaMult: 1.3 },
+            { id: 'deadly', name: "Deadly Ailments", moreDmg: 0.20, moreSpeed: 1.0, manaMult: 1.0, dotMore: 1.45 }
         ];
 
-        // --- State ---
+        // PoE2 Style Auras (Spirit System)
+        const auras = [
+            { id: 'zealotry', name: "Zealotry", cost: 50, effects: { incDmg: 0, moreDmg: 1.15, incSpeed: 0, flatDmg: 0 }, desc: "15% More Spell Dmg" },
+            { id: 'haste', name: "Haste", cost: 50, effects: { incDmg: 0, moreDmg: 1.0, incSpeed: 20, flatDmg: 0 }, desc: "20% Inc Cast Speed" },
+            { id: 'herald_ash', name: "Herald of Ash", cost: 25, effects: { incDmg: 0, moreDmg: 1.0, incSpeed: 0, flatDmg: 0, fireMore: 1.12 }, desc: "12% More Fire Dmg" },
+            { id: 'discipline', name: "Focus Seal", cost: 30, effects: { incDmg: 25, moreDmg: 1.0, incSpeed: 0, flatDmg: 0 }, desc: "25% Inc Dmg" },
+            { id: 'anger', name: "Anger", cost: 50, effects: { incDmg: 0, moreDmg: 1.0, incSpeed: 0, flatDmg: 120 }, desc: "+120 Flat Fire Dmg" }
+        ];
+
+        // --- State Management ---
         let state = {
             skill: skills[0],
-            supports: new Set(),
-            incDmg: 0,
-            incSpeed: 0,
-            flatDmg: 0
+            supports: new Set(), // Set of Strings
+            activeAuras: new Set(), // Set of Strings
+            inputs: { incDmg: 20, incSpeed: 10, flatDmg: 15, maxSpirit: 100 }
         };
 
-        // --- Init ---
+        // --- DOM Elements ---
         const skillListEl = document.getElementById('skillList');
         const supportGridEl = document.getElementById('supportGrid');
+        const auraGridEl = document.getElementById('auraGrid');
         
-        // Input Els
-        const inIncDmg = document.getElementById('in_incDmg');
-        const inIncSpeed = document.getElementById('in_incSpeed');
-        const inFlatDmg = document.getElementById('in_flatDmg');
-
+        // --- Initialization ---
         function init() {
             // Render Skills
             skills.forEach(s => {
                 const el = document.createElement('div');
                 el.className = `skill-card ${state.skill.id === s.id ? 'selected' : ''}`;
                 el.innerHTML = `<span class="skill-name">${s.name}</span><span class="${s.tagClass}">${s.element}</span>`;
-                el.onclick = () => {
-                    state.skill = s;
-                    updateUI();
-                };
+                el.onclick = () => { state.skill = s; updateVisuals(); calc(); };
                 skillListEl.appendChild(el);
             });
 
@@ -223,106 +259,198 @@
             supports.forEach(s => {
                 const el = document.createElement('div');
                 el.className = 'support-gem';
-                el.dataset.id = s.id;
                 el.innerText = s.name;
+                el.dataset.id = s.id;
                 el.onclick = () => {
                     if(state.supports.has(s.id)) state.supports.delete(s.id);
                     else state.supports.add(s.id);
-                    updateUI();
+                    updateVisuals(); calc();
                 };
                 supportGridEl.appendChild(el);
             });
 
+            // Render Auras
+            auras.forEach(a => {
+                const el = document.createElement('div');
+                el.className = 'aura-btn';
+                el.dataset.id = a.id;
+                el.innerHTML = `
+                    <div class="aura-indicator"></div>
+                    <span class="aura-name">${a.name}</span>
+                    <span class="aura-cost">${a.cost} Spirit | ${a.desc}</span>
+                `;
+                el.onclick = () => toggleAura(a);
+                auraGridEl.appendChild(el);
+            });
+
             // Bind Inputs
-            [inIncDmg, inIncSpeed, inFlatDmg].forEach(input => {
-                input.addEventListener('input', (e) => {
-                    state[e.target.id.replace('in_', '')] = parseFloat(e.target.value) || 0;
+            ['incDmg', 'incSpeed', 'flatDmg', 'maxSpirit'].forEach(key => {
+                document.getElementById('in_' + key).addEventListener('input', (e) => {
+                    state.inputs[key] = parseFloat(e.target.value) || 0;
+                    if(key === 'maxSpirit') validateAuras();
                     calc();
                 });
             });
 
-            updateUI();
-        }
-
-        function updateUI() {
-            // Update Skill Selection Visuals
-            Array.from(skillListEl.children).forEach((el, idx) => {
-                const skill = skills[idx];
-                el.className = `skill-card ${state.skill.id === skill.id ? 'selected' : ''}`;
-            });
-
-            // Update Support Visuals
-            Array.from(supportGridEl.children).forEach(el => {
-                const id = el.dataset.id;
-                el.className = `support-gem ${state.supports.has(id) ? 'active' : ''}`;
-            });
-
-            // Toggle DoT Section
-            document.getElementById('dotSection').style.display = state.skill.ailment > 0 ? 'block' : 'none';
-
+            updateVisuals();
             calc();
         }
 
+        // --- Logic: Spirit System ---
+        function toggleAura(aura) {
+            if (state.activeAuras.has(aura.id)) {
+                state.activeAuras.delete(aura.id);
+            } else {
+                // Check Cost
+                const currentUsage = calculateSpiritUsage();
+                if (currentUsage + aura.cost <= state.inputs.maxSpirit) {
+                    state.activeAuras.add(aura.id);
+                } else {
+                    // Flash red or visual feedback could go here
+                    alert("Not enough Spirit!");
+                    return;
+                }
+            }
+            updateVisuals();
+            calc();
+        }
+
+        function calculateSpiritUsage() {
+            let used = 0;
+            state.activeAuras.forEach(id => {
+                const a = auras.find(x => x.id === id);
+                if(a) used += a.cost;
+            });
+            return used;
+        }
+
+        function validateAuras() {
+            // If Max Spirit is lowered below usage, disable some auras
+            // Simplified: Just clear all if overflow (or could implement smart remove)
+            if (calculateSpiritUsage() > state.inputs.maxSpirit) {
+                state.activeAuras.clear();
+                updateVisuals();
+            }
+        }
+
+        // --- Visual Updates ---
+        function updateVisuals() {
+            // Skills
+            Array.from(skillListEl.children).forEach((el, idx) => {
+                el.className = `skill-card ${state.skill.id === skills[idx].id ? 'selected' : ''}`;
+            });
+
+            // Supports
+            Array.from(supportGridEl.children).forEach(el => {
+                el.className = `support-gem ${state.supports.has(el.dataset.id) ? 'active' : ''}`;
+            });
+
+            // Auras & Spirit Bar
+            const usedSpirit = calculateSpiritUsage();
+            const maxSpirit = state.inputs.maxSpirit;
+            const pct = Math.min((usedSpirit / maxSpirit) * 100, 100);
+            
+            document.getElementById('spiritText').innerText = `${usedSpirit} / ${maxSpirit}`;
+            const bar = document.getElementById('spiritBar');
+            bar.style.width = pct + "%";
+            bar.className = `spirit-bar-fill ${pct >= 100 ? 'full' : ''}`;
+
+            Array.from(auraGridEl.children).forEach(el => {
+                const id = el.dataset.id;
+                const aura = auras.find(x => x.id === id);
+                const isActive = state.activeAuras.has(id);
+                const canAfford = (usedSpirit + aura.cost <= maxSpirit);
+                
+                el.className = `aura-btn ${isActive ? 'active' : ''}`;
+                if (!isActive && !canAfford) el.classList.add('disabled');
+            });
+
+            // DoT Toggle
+            document.getElementById('dotSection').style.display = state.skill.ailment > 0 ? 'block' : 'none';
+        }
+
+        // --- Calculation Engine v4.0 ---
         function calc() {
             const s = state.skill;
+            const i = state.inputs;
+
+            // 1. Aggregating Aura Effects
+            let auraIncDmg = 0;
+            let auraIncSpeed = 0;
+            let auraFlat = 0;
+            let auraMoreDmg = 1.0;
+
+            state.activeAuras.forEach(id => {
+                const a = auras.find(x => x.id === id);
+                if(a.effects.incDmg) auraIncDmg += a.effects.incDmg;
+                if(a.effects.incSpeed) auraIncSpeed += a.effects.incSpeed;
+                if(a.effects.flatDmg) auraFlat += a.effects.flatDmg;
+                if(a.effects.moreDmg) auraMoreDmg *= a.effects.moreDmg;
+                
+                // Elemental Specific Checks (simplified)
+                if(s.element === "Fire" && a.effects.fireMore) auraMoreDmg *= a.effects.fireMore;
+            });
+
+            // 2. Base Layer
+            const totalFlat = i.flatDmg + auraFlat;
+            const baseDmgTotal = s.baseDmg + totalFlat;
+
+            // 3. Additive Layer (Gear + Auras)
+            const totalIncDmgPct = i.incDmg + auraIncDmg;
+            const totalIncSpeedPct = i.incSpeed + auraIncSpeed;
             
-            // 1. Base Stats (Gem + Flat Gear)
-            const baseDmgTotal = s.baseDmg + state.flatDmg;
+            const incDmgMult = 1 + (totalIncDmgPct / 100);
+            const incSpeedMult = 1 + (totalIncSpeedPct / 100);
 
-            // 2. Additive Modifiers (Gear %)
-            // Formula: Value * (1 + sum_increased / 100)
-            const incDmgMult = 1 + (state.incDmg / 100);
-            const incSpeedMult = 1 + (state.incSpeed / 100);
-
-            // 3. Multiplicative Modifiers (Supports)
-            let moreDmg = 1.0;
-            let moreSpeed = 1.0;
-            let manaMult = 1.0;
-            let dotMore = 1.0;
+            // 4. Multiplicative Layer (Supports + Aura More)
+            let supMoreDmg = 1.0;
+            let supMoreSpeed = 1.0;
+            let supManaMult = 1.0;
+            let supDotMore = 1.0;
 
             state.supports.forEach(supId => {
                 const sup = supports.find(x => x.id === supId);
-                if(sup) {
-                    moreDmg *= sup.moreDmg;
-                    moreSpeed *= sup.moreSpeed;
-                    manaMult *= sup.manaMult;
-                    if(sup.dotMore) dotMore *= sup.dotMore;
-                    else dotMore *= sup.moreDmg; // Usually generic dmg supports affect DoT too unless specified
-                }
+                supMoreDmg *= sup.moreDmg;
+                supMoreSpeed *= sup.moreSpeed;
+                supManaMult *= sup.manaMult;
+                if(sup.dotMore) supDotMore *= sup.dotMore;
+                else supDotMore *= sup.moreDmg;
             });
 
-            // --- Final Calculations ---
-            
-            // Hit Damage = (Base + Flat) * Inc% * More%
-            const finalHit = Math.floor(baseDmgTotal * incDmgMult * moreDmg);
-            
-            // Cast Rate = (1 / BaseTime) * IncSpeed% * MoreSpeed%
-            // Note: In PoE, Cast Time = Base / (Inc * More). Here represented as Rate (Casts per sec).
+            // Total Mores
+            const finalMoreDmg = supMoreDmg * auraMoreDmg;
+
+            // 5. Final Execution
+            const finalHit = Math.floor(baseDmgTotal * incDmgMult * finalMoreDmg);
             const baseRate = 1 / s.castTime;
-            const finalRate = baseRate * incSpeedMult * moreSpeedMult;
-            
-            const finalMana = Math.floor(s.mana * manaMult);
+            const finalRate = baseRate * incSpeedMult * supMoreSpeed;
+            const finalMana = Math.floor(s.mana * supManaMult);
             const dps = Math.floor(finalHit * finalRate);
 
-            // DoT Calc (Ignite)
-            // Ignite Base = (BaseHit * 0.9). Note: Flat dmg applies.
-            // Ignite scales with generic Dmg % and Dot Multipliers, but NOT Cast Speed.
+            // DoT Execution
             let finalDoT = 0;
             if(s.ailment > 0) {
                 const baseIgnite = baseDmgTotal * s.ailment;
-                finalDoT = Math.floor(baseIgnite * incDmgMult * dotMore); // Simplified rule
+                // Ignite typically doesn't benefit from Hit-specific More (like Zealotry's Spell Dmg) 
+                // in strict PoE mechanics, but generic dmg applies.
+                // For this demo: We assume Aura More applies to everything if generic.
+                finalDoT = Math.floor(baseIgnite * incDmgMult * supDotMore * (auraMoreDmg)); 
             }
 
-            // --- Render ---
+            // --- Render Results ---
             document.getElementById('out_hitDmg').innerText = finalHit.toLocaleString();
             document.getElementById('out_castRate').innerText = finalRate.toFixed(2);
             document.getElementById('out_mana').innerText = finalMana;
             document.getElementById('out_dps').innerText = dps.toLocaleString();
             document.getElementById('out_dot').innerText = finalDoT.toLocaleString() + " / sec";
 
-            // Preview Formula for Nerds
-            document.getElementById('out_formula').innerText = 
-                `Formula: (${baseDmgTotal} base) x (${incDmgMult.toFixed(2)} inc) x (${moreDmg.toFixed(2)} more)`;
+            // Logic Breakdown
+            document.getElementById('out_formula_base').innerHTML = 
+                `Base: <span style="color:#fff">${s.baseDmg}</span> + <span style="color:#fff">${totalFlat}</span> (Flat)`;
+            document.getElementById('out_formula_inc').innerHTML = 
+                `Additive: x<span style="color:#fff">${incDmgMult.toFixed(2)}</span> (${totalIncDmgPct}% Inc)`;
+            document.getElementById('out_formula_more').innerHTML = 
+                `Multiplicative: x<span style="color:#fff">${finalMoreDmg.toFixed(2)}</span> (Supports/Auras)`;
         }
 
         init();
