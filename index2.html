@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PoE2 Knowledge Base (Mobile Ready)</title>
+    <title>PoE2 Knowledge Base v2.0</title>
     <style>
         :root {
             --bg-color: #050505;
@@ -29,7 +29,7 @@
             overflow: hidden;
         }
 
-        /* --- Mobile Header (Visible only on mobile) --- */
+        /* --- Mobile Header --- */
         .mobile-header {
             display: none;
             height: 60px;
@@ -55,6 +55,8 @@
             margin-left: 15px;
             font-weight: bold;
             color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         /* --- Layout --- */
@@ -83,17 +85,19 @@
         .nav-list { flex: 1; overflow-y: auto; padding: 10px; padding-bottom: 80px; }
 
         .category-header {
-            color: var(--accent-gold); font-size: 0.85rem; text-transform: uppercase;
-            letter-spacing: 1px; margin-top: 20px; margin-bottom: 5px;
+            color: var(--accent-gold); font-size: 0.9rem; font-weight: bold;
+            margin-top: 25px; margin-bottom: 8px;
             padding-left: 10px; border-bottom: 1px solid #333;
+            padding-bottom: 4px;
         }
 
         .nav-item {
-            padding: 14px 15px; cursor: pointer; border-left: 3px solid transparent;
-            transition: all 0.2s; font-size: 1rem; border-bottom: 1px solid #1a1a1a;
+            padding: 12px 15px; cursor: pointer; border-left: 3px solid transparent;
+            transition: all 0.2s; font-size: 0.95rem; border-bottom: 1px solid #1a1a1a;
+            color: #aaa;
         }
         .nav-item:hover { background-color: var(--highlight); color: #fff; }
-        .nav-item.active { background-color: var(--highlight); border-left-color: var(--accent-red); color: var(--accent-gold); }
+        .nav-item.active { background-color: var(--highlight); border-left-color: var(--accent-red); color: var(--text-main); }
 
         /* --- Main Content --- */
         main {
@@ -125,25 +129,25 @@
             padding: 4px 8px; font-size: 0.85rem; margin-bottom: 15px; border: 1px solid #333;
         }
 
-        .description { font-size: 1.1rem; line-height: 1.7; color: var(--text-main); }
-        
+        .description { font-size: 1.1rem; line-height: 1.8; color: var(--text-main); }
+        .description strong { color: var(--accent-gold); font-weight: normal; }
+        .description ul { margin-left: 20px; margin-top: 10px; margin-bottom: 10px; }
+        .description li { margin-bottom: 5px; }
+
         .placeholder { display: flex; align-items: center; justify-content: center; height: 200px; color: var(--text-muted); font-style: italic; }
 
-        /* --- Mobile Responsive Styles --- */
+        /* --- Mobile Responsive --- */
         @media (max-width: 768px) {
-            body { flex-direction: column; padding-top: 60px; /* Header height */ }
+            body { flex-direction: column; padding-top: 60px; }
             .mobile-header { display: flex; }
-
             aside {
                 position: fixed; top: 60px; left: 0; bottom: 0;
                 width: 100%; transform: translateX(-100%);
             }
             aside.open { transform: translateX(0); }
-
             main { padding: 15px; }
             .content-panel { padding: 20px; margin-bottom: 40px; }
             h1 { font-size: 1.8rem; }
-            .description { font-size: 1rem; }
         }
     </style>
 </head>
@@ -151,16 +155,15 @@
 
 <div class="mobile-header">
     <div class="menu-toggle" onclick="toggleSidebar()">☰</div>
-    <div class="mobile-title">PoE2 Codex</div>
+    <div class="mobile-title">PoE2 Knowledge Base</div>
 </div>
 
 <div id="app">
     <aside id="sidebar">
         <div class="search-container">
-            <input type="text" id="search-input" placeholder="Search..." autocomplete="off">
+            <input type="text" id="search-input" placeholder="検索..." autocomplete="off">
         </div>
-        <div id="nav-container" class="nav-list">
-            </div>
+        <div id="nav-container" class="nav-list"></div>
     </aside>
 
     <main onclick="closeSidebarOutside()">
@@ -171,83 +174,61 @@
 </div>
 
 <script>
-    /* Data Structure:
-      Expanded to include all 12 classes and major PoE1 changes.
-    */
+    /* * PoE2 Data Structure v2.0
+     * Categories: 基本システム, 世界観・ストーリー, 用語集, クラス図鑑
+     */
     const knowledgeData = [
-        // --- System Changes (PoE1 vs PoE2) ---
+        // --- カテゴリ: 世界観・ストーリー ---
         {
-            id: 'chg-spirit', category: 'Changes (PoE1)', title: 'Spirit System',
-            content: 'PoE1のマナ予約（Mana Reservation）に代わる新リソース。オーラやヘラルド、ミニオンの維持には「Spirit」を使用する。これにより、マナはスキルの使用のみに専念できるようになり、リザーブによる「マナ枯渇」問題が解消された。Spiritの上限はアイテムやパッシブで増やす必要がある。'
+            id: 'story-ogham', category: '世界観・ストーリー', title: 'Ogham (オガム)',
+            content: 'PoE2の物語の幕開けとなる舞台。かつて栄えた文明の痕跡が残る荒廃した土地であり、不気味な霧と腐敗に覆われている。\nプレイヤーは処刑を逃れるため、あるいは追放された結果としてこの地に漂着し、古代の謎と新たな脅威「Seed of Corruption」に立ち向かうことになる。'
         },
         {
-            id: 'chg-sockets', category: 'Changes (PoE1)', title: 'Gem & Sockets',
-            content: '装備品にはもはやソケットが存在しない（指輪などに一部例外あり）。代わりに「アクティブスキルジェム」自体にサポートジェム用のソケットが存在する。これにより、ボディアーマーを変えても6リンクスキルをそのまま維持できる。リンクの数はジェムのレベルやアイテムレベルに依存する。'
-        },
-        {
-            id: 'chg-respec', category: 'Changes (PoE1)', title: 'Respec w/ Gold',
-            content: 'パッシブスキルの振り直しには「Gold」を使用する。後悔のオーブ（Orb of Regret）は存在しないか、別の用途になる。レベルが低い間の振り直しコストは安く、エンドゲームに近づくにつれて高額になる設計。'
+            id: 'story-exile', category: '世界観・ストーリー', title: 'Exile (追放者)',
+            content: '故郷を追われ、死地へと送られた者たちの総称。\nPoE1では神権政治国家Oriathからの宗教的・政治的追放者が主だったが、PoE2（20年後の世界）では、より多様な背景を持つキャラクターが登場する。彼らは単なる生存者ではなく、崩壊しつつある世界の理（ことわり）に抗う「変革者」としての側面を持つ。'
         },
 
-        // --- Classes: STR ---
+        // --- カテゴリ: 基本システム ---
         {
-            id: 'cls-marauder', category: 'Class: STR', title: 'Marauder',
-            content: 'PoE1からの続投クラス。純粋な力（Strength）を象徴する。重い武器、特に「斧（Axes）」の扱いに長ける。祖先の怒りを力に変えるスタイルは健在だが、PoE2ではよりダイナミックな戦闘アニメーションを持つ。'
+            id: 'sys-stats', category: '基本システム', title: '3つの基本能力値',
+            content: 'キャラクタービルドの根幹をなす3つの属性。\n\n<ul><li><strong>Strength (筋力/赤)</strong>: 物理ダメージの増加と最大ライフの向上。重装鎧の装備要件。</li><li><strong>Dexterity (敏捷/緑)</strong>: 攻撃速度、命中率、回避率(Evasion)の向上。軽装鎧の装備要件。</li><li><strong>Intelligence (知性/青)</strong>: 最大マナとエナジーシールドの向上。魔法系装備の要件。</li></ul>'
         },
         {
-            id: 'cls-warrior', category: 'Class: STR', title: 'Warrior (New)',
-            content: '新クラス。Marauder同様にStrengthベースだが、より「戦術的な重装歩兵」の側面が強い。「メイス（Maces）」や「ハンマー」を用い、地面を叩きつけるスラム（Slams）攻撃や、ウォークライ（Warcries）によるバフ・デバフ制御を得意とする。'
-        },
-
-        // --- Classes: DEX ---
-        {
-            id: 'cls-ranger', category: 'Class: DEX', title: 'Ranger',
-            content: 'PoE1からの続投クラス。敏捷性（Dexterity）の象徴。依然として「弓（Bows）」のスペシャリストだが、移動しながらの射撃や、植物・自然の力を借りた攻撃など、機動力が大幅に強化されている。'
+            id: 'sys-uncut', category: '基本システム', title: 'Uncut Gems (新ジェム)',
+            content: 'PoE2のスキルシステムの中核。敵は特定のスキルジェムではなく「Uncut Gem（原石）」をドロップする。\nプレイヤーはこの原石を使用（右クリック）することで、そのレベル帯で利用可能な「任意のスキル」を選択して習得できる。これにより、ビルドに必要なスキルが入手できないという運要素が排除された。'
         },
         {
-            id: 'cls-huntress', category: 'Class: DEX', title: 'Huntress (New)',
-            content: '新クラス。Dexterityベース。主な武器は「槍（Spears）」。近接攻撃と投擲攻撃をシームレスに切り替えるスタイルを持つ。野生の猛獣と共に戦う要素や、生存能力（Survival）に長けたスキルセットを持つ。'
+            id: 'sys-dodge', category: '基本システム', title: 'Dodge Roll (回避)',
+            content: '全クラス標準装備のアクション（PC版デフォルト：スペースキー）。\n指定方向へ転がり、敵の攻撃判定をすり抜ける。特筆すべきは「スタン（気絶）キャンセル効果」があり、敵に囲まれてハメられそうな状況からの脱出手段として機能する。使用回数制限はないが、動作後の硬直には注意が必要。'
+        },
+        {
+            id: 'sys-currency', category: '基本システム', title: '経済 (Gold vs Orbs)',
+            content: 'PoE2の経済は二重構造になっている。\n\n<ul><li><strong>Gold (ゴールド)</strong>: 新通貨。NPCとの取引、ギャンブル、そして「パッシブスキルの振り直し」に使用する。トレード不可（基本的に個人用）。</li><li><strong>Currency Orbs (オーブ)</strong>: PoE1から続くアイテム群（Chaos Orb等）。装備のクラフト（改造）に使用されるほか、プレイヤー間トレードの「貨幣」として機能する。</li></ul>'
         },
 
-        // --- Classes: INT ---
+        // --- カテゴリ: 用語集 (含: PoE1変更点) ---
         {
-            id: 'cls-witch', category: 'Class: INT', title: 'Witch',
-            content: 'PoE1からの続投クラス。知性（Intelligence）の象徴。「ミニオン（召喚）」と「オカルト魔法（Chaos/DoT）」の達人。死霊術により、倒した敵を即座に使役するなど、ミニオン管理のメカニクスが進化している。'
+            id: 'term-spirit', category: '用語集', title: 'Spirit (スピリット)',
+            content: 'マナとは別の新たなリソース。オーラ、バフ、ミニオンの維持（Reservation）専用に使用される。\nこれにより「オーラを張りすぎてスキルを使うマナがない」という事態が防がれる。Spiritの上限値は装備やパッシブツリー、Sceptre（武器）などで増やす必要がある。'
         },
         {
-            id: 'cls-sorceress', category: 'Class: INT', title: 'Sorceress (New)',
-            content: '新クラス。Intelligenceベース。純粋な「エレメンタル魔法（Fire, Cold, Lightning）」の破壊力を追求するクラス。Witchが闇や召喚寄りなのに対し、Sorceressは天候を操り、広範囲を殲滅するキャスターとしてデザインされている。'
-        },
-
-        // --- Classes: STR/DEX ---
-        {
-            id: 'cls-duelist', category: 'Class: STR/DEX', title: 'Duelist',
-            content: 'PoE1からの続投クラス。剣技の達人。近接戦闘における回避と攻撃のバランスに優れる。「剣（Swords）」を用いた高速な連撃や、カウンター技が特徴。'
-        },
-        {
-            id: 'cls-mercenary', category: 'Class: STR/DEX', title: 'Mercenary (New)',
-            content: '新クラス。「クロスボウ（Crossbows）」を使用する特殊なクラス。このクラスのみ、WASD移動とマウスエイムによるTPS（サードパーソンシューティング）のような操作感が標準となる。「特殊弾薬」や「グレネードランチャー」を換装して戦う。'
+            id: 'term-links', category: '用語集', title: 'Jeweller / Fusing',
+            content: 'PoE2では装備品にソケットがないため、Jeweller\'s Orb（穴あけ）やOrb of Fusing（リンク）の使用先が変更された。\nこれらは「Uncut Gem」自体に使用し、アクティブスキルのソケット数を増やしたりリンクをつなぐために使われる。一度6リンクにしたジェムは、装備を変えてもそのまま使用可能。'
         },
 
-        // --- Classes: INT/DEX ---
-        {
-            id: 'cls-shadow', category: 'Class: INT/DEX', title: 'Shadow',
-            content: 'PoE1からの続投クラス。暗殺者。「ダガー（Daggers）」と「罠（Traps）」のスペシャリスト。クリティカル攻撃や状態異常毒（Poison）を駆使し、テクニカルに敵を排除する。'
-        },
-        {
-            id: 'cls-monk', category: 'Class: INT/DEX', title: 'Monk (New)',
-            content: '新クラス。高い機動力を持つ武道家。「素手（Unarmed）」または「クォータースタッフ（Quarterstaves）」を使用する。流れるようなコンボ攻撃と、氷や風の元素を纏った体術が特徴。ヒットアンドアウェイの極致。'
-        },
-
-        // --- Classes: STR/INT ---
-        {
-            id: 'cls-templar', category: 'Class: STR/INT', title: 'Templar',
-            content: 'PoE1からの続投クラス。信仰と武力の融合。「盾（Shields）」と属性近接攻撃、または魔法を併用する。防御力と攻撃力を兼ね備えたハイブリッドな戦い方を得意とする。'
-        },
-        {
-            id: 'cls-druid', category: 'Class: STR/INT', title: 'Druid (New)',
-            content: '新クラス。自然の猛威を体現する。「変身（Shapeshifting）」が最大の特徴で、熊（Bear）になって耐久と物理攻撃を得たり、狼（Wolf）になって素早く敵を切り裂く。変身中も魔法をキャストできるハイブリッドな運用が可能。'
-        }
+        // --- カテゴリ: クラス図鑑 (全12クラス) ---
+        { id: 'cls-marauder', category: 'クラス図鑑', title: 'Marauder (STR)', content: '【続投】斧による重撃と祖先の力。' },
+        { id: 'cls-warrior', category: 'クラス図鑑', title: 'Warrior (STR)', content: '【新規】メイスとスラム、雄叫び（Warcry）のスペシャリスト。' },
+        { id: 'cls-ranger', category: 'クラス図鑑', title: 'Ranger (DEX)', content: '【続投】弓による移動射撃と自然の力。' },
+        { id: 'cls-huntress', category: 'クラス図鑑', title: 'Huntress (DEX)', content: '【新規】槍（Spear）による近接・投擲のスイッチと狩猟。' },
+        { id: 'cls-witch', category: 'クラス図鑑', title: 'Witch (INT)', content: '【続投】ミニオン使役とカオス魔法。' },
+        { id: 'cls-sorceress', category: 'クラス図鑑', title: 'Sorceress (INT)', content: '【新規】純粋な元素魔法（火・氷・雷）による殲滅。' },
+        { id: 'cls-duelist', category: 'クラス図鑑', title: 'Duelist (STR/DEX)', content: '【続投】剣技と近接回避の達人。' },
+        { id: 'cls-mercenary', category: 'クラス図鑑', title: 'Mercenary (STR/DEX)', content: '【新規】クロスボウと特殊弾薬。WASD移動シューター。' },
+        { id: 'cls-shadow', category: 'クラス図鑑', title: 'Shadow (INT/DEX)', content: '【続投】ダガーと罠、クリティカルと毒。' },
+        { id: 'cls-monk', category: 'クラス図鑑', title: 'Monk (INT/DEX)', content: '【新規】素手・棒術によるコンボと機動力。' },
+        { id: 'cls-templar', category: 'クラス図鑑', title: 'Templar (STR/INT)', content: '【続投】盾と魔法・物理のハイブリッド。' },
+        { id: 'cls-druid', category: 'クラス図鑑', title: 'Druid (STR/INT)', content: '【新規】熊や狼への変身と自然魔法。' },
     ];
 
     // DOM Elements
@@ -262,19 +243,16 @@
     function renderNavigation(filterText = '') {
         navContainer.innerHTML = '';
         
-        // Dynamic Category Extraction
-        const categories = [...new Set(knowledgeData.map(item => item.category))];
+        // カテゴリの表示順序を定義
+        const categoryOrder = ['基本システム', '世界観・ストーリー', '用語集', 'クラス図鑑'];
         
-        // Define explicit order if needed, otherwise use alphabetical/insertion order
-        // sort categories so 'Class' come together, 'Changes' first
-        categories.sort((a, b) => {
-            if(a.includes('Changes')) return -1;
-            if(b.includes('Changes')) return 1;
-            return a.localeCompare(b);
-        });
+        // データが存在するカテゴリのみ抽出
+        const activeCategories = categoryOrder.filter(cat => 
+            knowledgeData.some(item => item.category === cat)
+        );
 
         const groupedData = {};
-        categories.forEach(cat => {
+        activeCategories.forEach(cat => {
             groupedData[cat] = knowledgeData.filter(item => 
                 item.category === cat && 
                 (item.title.toLowerCase().includes(filterText.toLowerCase()) || 
@@ -282,8 +260,8 @@
             );
         });
 
-        categories.forEach(cat => {
-            if (groupedData[cat].length > 0) {
+        activeCategories.forEach(cat => {
+            if (groupedData[cat] && groupedData[cat].length > 0) {
                 const header = document.createElement('div');
                 header.className = 'category-header';
                 header.textContent = cat;
@@ -294,9 +272,9 @@
                     navItem.className = `nav-item ${item.id === currentSelectionId ? 'active' : ''}`;
                     navItem.textContent = item.title;
                     navItem.onclick = (e) => {
-                        e.stopPropagation(); // prevent main click
+                        e.stopPropagation();
                         selectItem(item);
-                        if(window.innerWidth <= 768) toggleSidebar(); // close sidebar on mobile
+                        if(window.innerWidth <= 768) toggleSidebar();
                     };
                     navContainer.appendChild(navItem);
                 });
@@ -306,7 +284,7 @@
 
     function selectItem(item) {
         currentSelectionId = item.id;
-        renderNavigation(searchInput.value); // refresh active state
+        renderNavigation(searchInput.value);
         
         const formattedContent = item.content.replace(/\n/g, '<br>');
         
@@ -315,26 +293,15 @@
             <h1>${item.title}</h1>
             <div class="description">${formattedContent}</div>
         `;
-        
-        // Scroll to top of content
         document.querySelector('main').scrollTop = 0;
     }
 
-    // --- Mobile UI Logic ---
-    function toggleSidebar() {
-        sidebar.classList.toggle('open');
-    }
+    // --- Mobile UI ---
+    function toggleSidebar() { sidebar.classList.toggle('open'); }
+    function closeSidebarOutside() { if (window.innerWidth <= 768) sidebar.classList.remove('open'); }
 
-    function closeSidebarOutside() {
-        if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
-            sidebar.classList.remove('open');
-        }
-    }
-
-    // --- Events ---
+    // --- Init ---
     searchInput.addEventListener('input', (e) => renderNavigation(e.target.value));
-    
-    // Initial Render
     renderNavigation();
 
 </script>
