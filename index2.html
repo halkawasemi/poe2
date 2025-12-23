@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PoE2 Knowledge Base v2.0</title>
+    <title>PoE2 Knowledge Base v3.0</title>
     <style>
         :root {
             --bg-color: #050505;
@@ -43,42 +43,31 @@
         }
 
         .menu-toggle {
-            font-size: 24px;
-            color: var(--accent-gold);
-            cursor: pointer;
-            border: 1px solid var(--border-color);
-            padding: 5px 10px;
-            background: #000;
+            font-size: 24px; color: var(--accent-gold); cursor: pointer;
+            border: 1px solid var(--border-color); padding: 5px 10px; background: #000;
         }
 
         .mobile-title {
-            margin-left: 15px;
-            font-weight: bold;
-            color: var(--accent-gold);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            margin-left: 15px; font-weight: bold; color: var(--accent-gold);
+            text-transform: uppercase; letter-spacing: 1px;
         }
 
         /* --- Layout --- */
         #app { display: flex; width: 100%; height: 100%; position: relative; }
 
-        /* --- Sidebar --- */
         aside {
             width: var(--sidebar-width);
             background-color: var(--sidebar-bg);
             border-right: 2px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column;
             transition: transform 0.3s ease;
             z-index: 90;
         }
 
         .search-container { padding: 20px; border-bottom: 1px solid var(--border-color); }
-        
         #search-input {
-            width: 100%; padding: 10px;
-            background-color: #000; border: 1px solid var(--border-color);
-            color: var(--text-main); font-size: 16px;
+            width: 100%; padding: 10px; background-color: #000;
+            border: 1px solid var(--border-color); color: var(--text-main); font-size: 16px;
         }
         #search-input:focus { outline: none; border-color: var(--accent-gold); }
 
@@ -86,20 +75,17 @@
 
         .category-header {
             color: var(--accent-gold); font-size: 0.9rem; font-weight: bold;
-            margin-top: 25px; margin-bottom: 8px;
-            padding-left: 10px; border-bottom: 1px solid #333;
-            padding-bottom: 4px;
+            margin-top: 25px; margin-bottom: 8px; padding-left: 10px;
+            border-bottom: 1px solid #333; padding-bottom: 4px;
         }
 
         .nav-item {
             padding: 12px 15px; cursor: pointer; border-left: 3px solid transparent;
-            transition: all 0.2s; font-size: 0.95rem; border-bottom: 1px solid #1a1a1a;
-            color: #aaa;
+            transition: all 0.2s; font-size: 0.95rem; border-bottom: 1px solid #1a1a1a; color: #aaa;
         }
         .nav-item:hover { background-color: var(--highlight); color: #fff; }
         .nav-item.active { background-color: var(--highlight); border-left-color: var(--accent-red); color: var(--text-main); }
 
-        /* --- Main Content --- */
         main {
             flex: 1; padding: 40px; overflow-y: auto;
             background: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%);
@@ -111,15 +97,13 @@
             background-color: var(--panel-bg); border: 1px solid var(--border-color);
             padding: 40px; box-shadow: 0 0 20px rgba(0,0,0,0.8); position: relative;
         }
-
         .content-panel::before {
-            content: ''; position: absolute;
-            top: 2px; left: 2px; right: 2px; bottom: 2px;
+            content: ''; position: absolute; top: 2px; left: 2px; right: 2px; bottom: 2px;
             border: 1px solid #2a2a2a; pointer-events: none;
         }
 
         h1 {
-            color: var(--accent-gold); font-size: 2.2rem; margin-bottom: 10px;
+            color: var(--accent-gold); font-size: 2.2rem; margin-bottom: 15px;
             font-family: 'Times New Roman', serif; border-bottom: 1px solid var(--border-color);
             padding-bottom: 10px; line-height: 1.2;
         }
@@ -131,12 +115,21 @@
 
         .description { font-size: 1.1rem; line-height: 1.8; color: var(--text-main); }
         .description strong { color: var(--accent-gold); font-weight: normal; }
-        .description ul { margin-left: 20px; margin-top: 10px; margin-bottom: 10px; }
+        .description ul { margin-left: 20px; margin-bottom: 15px; }
         .description li { margin-bottom: 5px; }
+
+        /* Class Specific Grid Layout */
+        .class-grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-top: 20px; }
+        .class-section { background: rgba(0,0,0,0.3); padding: 15px; border: 1px solid #2a2a2a; }
+        .class-section h3 {
+            color: var(--accent-gold); font-size: 1rem; border-bottom: 1px solid #333;
+            padding-bottom: 5px; margin-bottom: 10px; text-transform: uppercase;
+        }
+        .weakness-text { color: #ff6b6b; }
+        .build-text { color: #88ccff; font-family: monospace; }
 
         .placeholder { display: flex; align-items: center; justify-content: center; height: 200px; color: var(--text-muted); font-style: italic; }
 
-        /* --- Mobile Responsive --- */
         @media (max-width: 768px) {
             body { flex-direction: column; padding-top: 60px; }
             .mobile-header { display: flex; }
@@ -174,79 +167,147 @@
 </div>
 
 <script>
-    /* * PoE2 Data Structure v2.0
-     * Categories: 基本システム, 世界観・ストーリー, 用語集, クラス図鑑
+    /**
+     * PoE2 Data Structure v3.0
+     * クラスデータに詳細フィールド (features, style, weakness, builds) を追加
      */
     const knowledgeData = [
         // --- カテゴリ: 世界観・ストーリー ---
         {
             id: 'story-ogham', category: '世界観・ストーリー', title: 'Ogham (オガム)',
-            content: 'PoE2の物語の幕開けとなる舞台。かつて栄えた文明の痕跡が残る荒廃した土地であり、不気味な霧と腐敗に覆われている。\nプレイヤーは処刑を逃れるため、あるいは追放された結果としてこの地に漂着し、古代の謎と新たな脅威「Seed of Corruption」に立ち向かうことになる。'
+            content: 'PoE2の物語の幕開けとなる舞台。かつて栄えた文明の痕跡が残る荒廃した土地であり、不気味な霧と腐敗に覆われている。プレイヤーは処刑を逃れるため、あるいは追放された結果としてこの地に漂着する。'
         },
         {
             id: 'story-exile', category: '世界観・ストーリー', title: 'Exile (追放者)',
-            content: '故郷を追われ、死地へと送られた者たちの総称。\nPoE1では神権政治国家Oriathからの宗教的・政治的追放者が主だったが、PoE2（20年後の世界）では、より多様な背景を持つキャラクターが登場する。彼らは単なる生存者ではなく、崩壊しつつある世界の理（ことわり）に抗う「変革者」としての側面を持つ。'
+            content: '故郷を追われ、死地へと送られた者たちの総称。PoE2（20年後の世界）では、より多様な背景を持つキャラクターが登場する。彼らは崩壊しつつある世界の理（ことわり）に抗う「変革者」としての側面を持つ。'
         },
 
         // --- カテゴリ: 基本システム ---
         {
             id: 'sys-stats', category: '基本システム', title: '3つの基本能力値',
-            content: 'キャラクタービルドの根幹をなす3つの属性。\n\n<ul><li><strong>Strength (筋力/赤)</strong>: 物理ダメージの増加と最大ライフの向上。重装鎧の装備要件。</li><li><strong>Dexterity (敏捷/緑)</strong>: 攻撃速度、命中率、回避率(Evasion)の向上。軽装鎧の装備要件。</li><li><strong>Intelligence (知性/青)</strong>: 最大マナとエナジーシールドの向上。魔法系装備の要件。</li></ul>'
+            content: '<ul><li><strong>Strength (筋力/赤)</strong>: 物理ダメ・HP増加。重装鎧。</li><li><strong>Dexterity (敏捷/緑)</strong>: 速度・回避・命中。軽装鎧。</li><li><strong>Intelligence (知性/青)</strong>: マナ・エナジーシールド。魔法装備。</li></ul>'
         },
         {
             id: 'sys-uncut', category: '基本システム', title: 'Uncut Gems (新ジェム)',
-            content: 'PoE2のスキルシステムの中核。敵は特定のスキルジェムではなく「Uncut Gem（原石）」をドロップする。\nプレイヤーはこの原石を使用（右クリック）することで、そのレベル帯で利用可能な「任意のスキル」を選択して習得できる。これにより、ビルドに必要なスキルが入手できないという運要素が排除された。'
+            content: 'スキルシステムの中核。「Uncut Gem（原石）」を使用し、メニューから任意のスキルを選択して習得する。運要素が排除され、ビルド構築が安定する。'
         },
         {
             id: 'sys-dodge', category: '基本システム', title: 'Dodge Roll (回避)',
-            content: '全クラス標準装備のアクション（PC版デフォルト：スペースキー）。\n指定方向へ転がり、敵の攻撃判定をすり抜ける。特筆すべきは「スタン（気絶）キャンセル効果」があり、敵に囲まれてハメられそうな状況からの脱出手段として機能する。使用回数制限はないが、動作後の硬直には注意が必要。'
+            content: '全クラス標準装備のアクション（Spaceキー）。移動中に無敵判定があり、スタン（気絶）をキャンセルできる。ボス戦での必須テクニック。'
         },
         {
             id: 'sys-currency', category: '基本システム', title: '経済 (Gold vs Orbs)',
-            content: 'PoE2の経済は二重構造になっている。\n\n<ul><li><strong>Gold (ゴールド)</strong>: 新通貨。NPCとの取引、ギャンブル、そして「パッシブスキルの振り直し」に使用する。トレード不可（基本的に個人用）。</li><li><strong>Currency Orbs (オーブ)</strong>: PoE1から続くアイテム群（Chaos Orb等）。装備のクラフト（改造）に使用されるほか、プレイヤー間トレードの「貨幣」として機能する。</li></ul>'
+            content: '<ul><li><strong>Gold</strong>: NPC取引、リスペック（振り直し）用。トレード不可。</li><li><strong>Orbs</strong>: クラフト素材兼、プレイヤー間トレード通貨（Chaos Orb等）。</li></ul>'
         },
 
-        // --- カテゴリ: 用語集 (含: PoE1変更点) ---
-        {
-            id: 'term-spirit', category: '用語集', title: 'Spirit (スピリット)',
-            content: 'マナとは別の新たなリソース。オーラ、バフ、ミニオンの維持（Reservation）専用に使用される。\nこれにより「オーラを張りすぎてスキルを使うマナがない」という事態が防がれる。Spiritの上限値は装備やパッシブツリー、Sceptre（武器）などで増やす必要がある。'
+        // --- カテゴリ: 用語集 ---
+        { id: 'term-spirit', category: '用語集', title: 'Spirit (スピリット)', content: 'オーラやミニオン維持専用のリソース。マナとは別枠管理。' },
+        { id: 'term-links', category: '用語集', title: 'Jeweller / Fusing', content: 'Uncut Gem自体にソケットを開け、リンクをつなぐシステムに変更された。' },
+
+        // --- カテゴリ: クラス図鑑 (STR) ---
+        { 
+            id: 'cls-marauder', category: 'クラス図鑑', title: 'Marauder (STR)',
+            features: '高いHPと物理軽減率。祖先の霊（Ancestors）を使役する能力を持つ。',
+            style: '「斧」を主体とした近接戦闘。敵の攻撃を受け止めつつ、圧倒的な一撃で粉砕する。',
+            weakness: '移動速度が遅め。遠距離攻撃への対抗手段が乏しい場合がある。',
+            builds: 'Ancestral Call, Sunder, Heavy Strike'
         },
-        {
-            id: 'term-links', category: '用語集', title: 'Jeweller / Fusing',
-            content: 'PoE2では装備品にソケットがないため、Jeweller\'s Orb（穴あけ）やOrb of Fusing（リンク）の使用先が変更された。\nこれらは「Uncut Gem」自体に使用し、アクティブスキルのソケット数を増やしたりリンクをつなぐために使われる。一度6リンクにしたジェムは、装備を変えてもそのまま使用可能。'
+        { 
+            id: 'cls-warrior', category: 'クラス図鑑', title: 'Warrior (STR)',
+            features: '「メイス/ハンマー」と「ウォークライ（雄叫び）」に特化。スタン（気絶）性能が極めて高い。',
+            style: 'Slam（地面叩きつけ）スキルによる広範囲攻撃。ウォークライで敵を弱体化・挑発してまとめて叩く。',
+            weakness: '攻撃モーションが遅く、素早い敵にスカりやすい。',
+            builds: 'Earthquake, Tectonic Slam, Warcry Buffs'
         },
 
-        // --- カテゴリ: クラス図鑑 (全12クラス) ---
-        { id: 'cls-marauder', category: 'クラス図鑑', title: 'Marauder (STR)', content: '【続投】斧による重撃と祖先の力。' },
-        { id: 'cls-warrior', category: 'クラス図鑑', title: 'Warrior (STR)', content: '【新規】メイスとスラム、雄叫び（Warcry）のスペシャリスト。' },
-        { id: 'cls-ranger', category: 'クラス図鑑', title: 'Ranger (DEX)', content: '【続投】弓による移動射撃と自然の力。' },
-        { id: 'cls-huntress', category: 'クラス図鑑', title: 'Huntress (DEX)', content: '【新規】槍（Spear）による近接・投擲のスイッチと狩猟。' },
-        { id: 'cls-witch', category: 'クラス図鑑', title: 'Witch (INT)', content: '【続投】ミニオン使役とカオス魔法。' },
-        { id: 'cls-sorceress', category: 'クラス図鑑', title: 'Sorceress (INT)', content: '【新規】純粋な元素魔法（火・氷・雷）による殲滅。' },
-        { id: 'cls-duelist', category: 'クラス図鑑', title: 'Duelist (STR/DEX)', content: '【続投】剣技と近接回避の達人。' },
-        { id: 'cls-mercenary', category: 'クラス図鑑', title: 'Mercenary (STR/DEX)', content: '【新規】クロスボウと特殊弾薬。WASD移動シューター。' },
-        { id: 'cls-shadow', category: 'クラス図鑑', title: 'Shadow (INT/DEX)', content: '【続投】ダガーと罠、クリティカルと毒。' },
-        { id: 'cls-monk', category: 'クラス図鑑', title: 'Monk (INT/DEX)', content: '【新規】素手・棒術によるコンボと機動力。' },
-        { id: 'cls-templar', category: 'クラス図鑑', title: 'Templar (STR/INT)', content: '【続投】盾と魔法・物理のハイブリッド。' },
-        { id: 'cls-druid', category: 'クラス図鑑', title: 'Druid (STR/INT)', content: '【新規】熊や狼への変身と自然魔法。' },
+        // --- カテゴリ: クラス図鑑 (DEX) ---
+        { 
+            id: 'cls-ranger', category: 'クラス図鑑', title: 'Ranger (DEX)',
+            features: '「弓」のスペシャリスト。移動しながらの射撃が可能になり、機動力が向上。',
+            style: 'カイト（引き撃ち）戦法。敵を寄せ付けず、遠距離から矢の雨を降らせる。植物系の魔法も使用可能。',
+            weakness: '物理耐久が低く、囲まれると脆い。',
+            builds: 'Lightning Arrow, Barrage, Poison Arrow'
+        },
+        { 
+            id: 'cls-huntress', category: 'クラス図鑑', title: 'Huntress (DEX)',
+            features: '「槍（Spear）」を使用。近接攻撃と遠距離投擲をシームレスに切り替える。',
+            style: 'ヒット＆アウェイ。敵の隙を突いて飛び込み、危険な時は槍を投げて距離を取る。猛獣を使役することもある。',
+            weakness: '操作が忙しく、位置取りのミスが死に直結する。',
+            builds: 'Spear Throw, Whirling Blades, Bleed builds'
+        },
+
+        // --- カテゴリ: クラス図鑑 (INT) ---
+        { 
+            id: 'cls-witch', category: 'クラス図鑑', title: 'Witch (INT)',
+            features: '「ミニオン（召喚）」と「カオス/呪い」の達人。死体をリソースとして活用する。',
+            style: 'ミニオンを壁にして自身は安全圏からデバフを撒く指揮官スタイル。',
+            weakness: '本体の防御力が極めて低い。ミニオンが全滅すると無力化する。',
+            builds: 'Zombie Summoner, Essence Drain, Contagion'
+        },
+        { 
+            id: 'cls-sorceress', category: 'クラス図鑑', title: 'Sorceress (INT)',
+            features: '火・氷・雷の「エレメンタル魔法」に特化。純粋な魔法アタッカー。',
+            style: '広範囲殲滅（Nuke）。強力なスペルで画面外の敵すら焼き払う。マナシールド等の魔法防御を持つ。',
+            weakness: '詠唱中の隙（キャストタイム）。物理ダメージに弱い。',
+            builds: 'Arc, Meteor, Frost Nova'
+        },
+
+        // --- カテゴリ: クラス図鑑 (Hybrid) ---
+        { 
+            id: 'cls-duelist', category: 'クラス図鑑', title: 'Duelist (STR/DEX)',
+            features: '「剣」技。攻撃と防御（ブロック/回避）のバランスが良い。',
+            style: '近接高速戦闘。敵の攻撃をパリィ（受け流し）し、カウンターを叩き込む。',
+            weakness: '持続ダメージ（DoT）や魔法攻撃に対しては特別な対策が必要。',
+            builds: 'Lacerate, Double Strike, Gladiator Block'
+        },
+        { 
+            id: 'cls-mercenary', category: 'クラス図鑑', title: 'Mercenary (STR/DEX)',
+            features: '「クロスボウ」専用クラス。WASD移動によるシュータースタイル。',
+            style: 'アサルト、ショットガン、スナイパー等のアタッチメントを換装し、状況に応じた射撃を行う。弾薬管理が必要。',
+            weakness: 'リロードの隙。エイム力（プレイヤースキル）が要求される。',
+            builds: 'Explosive Grenade, Frost Shotgun, Rapid Fire'
+        },
+        { 
+            id: 'cls-shadow', category: 'クラス図鑑', title: 'Shadow (INT/DEX)',
+            features: '「ダガー」「罠（Trap）」「地雷（Mine）」。クリティカルと毒。',
+            style: 'トリッキーな設置型戦闘。罠を敷き詰めて敵を誘導し、一瞬で蒸発させる。',
+            weakness: '準備に時間がかかる（罠設置→発動）。',
+            builds: 'Explosive Trap, Poison Blade, Assassin Crit'
+        },
+        { 
+            id: 'cls-monk', category: 'クラス図鑑', title: 'Monk (INT/DEX)',
+            features: '「素手」「棒術」。コンボシステムと勢い（Momentum）の管理。',
+            style: '高機動近接。敵の集団に飛び込み、スキルを連鎖させてエレメンタル爆発を起こして離脱する。',
+            weakness: '防御を回避率に依存するため、一撃死のリスクがある。',
+            builds: 'Glacial Cascade (Melee), Palm Strike, Lightning Combo'
+        },
+        { 
+            id: 'cls-templar', category: 'クラス図鑑', title: 'Templar (STR/INT)',
+            features: '「盾」と魔法。物理と魔法のハイブリッド攻撃。',
+            style: 'タンクメイジ。高い防御力で敵の攻撃を受け止めつつ、近距離魔法（雷や聖なる火）を放つ。',
+            weakness: '器用貧乏になりがち。移動速度は遅め。',
+            builds: 'Righteous Fire, Smite, Totems'
+        },
+        { 
+            id: 'cls-druid', category: 'クラス図鑑', title: 'Druid (STR/INT)',
+            features: '「変身（Shapeshift）」。熊（耐久・パワー）や狼（速度）に変身する。',
+            style: '変身中も魔法詠唱が可能。熊でスタンさせ、魔法で追撃するなど柔軟な戦術。',
+            weakness: '変身中はヒットボックス（当たり判定）が大きくなる。マナ管理が複雑。',
+            builds: 'Bear Slam, Wolf Bleed, Nature Spells'
+        }
     ];
 
-    // DOM Elements
+    // --- System Logic ---
     const navContainer = document.getElementById('nav-container');
     const contentArea = document.getElementById('content-area');
     const searchInput = document.getElementById('search-input');
     const sidebar = document.getElementById('sidebar');
-
     let currentSelectionId = null;
 
-    // --- Navigation Logic ---
     function renderNavigation(filterText = '') {
         navContainer.innerHTML = '';
-        
-        // カテゴリの表示順序を定義
         const categoryOrder = ['基本システム', '世界観・ストーリー', '用語集', 'クラス図鑑'];
         
-        // データが存在するカテゴリのみ抽出
         const activeCategories = categoryOrder.filter(cat => 
             knowledgeData.some(item => item.category === cat)
         );
@@ -256,7 +317,9 @@
             groupedData[cat] = knowledgeData.filter(item => 
                 item.category === cat && 
                 (item.title.toLowerCase().includes(filterText.toLowerCase()) || 
-                 item.content.toLowerCase().includes(filterText.toLowerCase()))
+                 (item.content && item.content.toLowerCase().includes(filterText.toLowerCase())) ||
+                 (item.features && item.features.toLowerCase().includes(filterText.toLowerCase()))
+                )
             );
         });
 
@@ -286,21 +349,46 @@
         currentSelectionId = item.id;
         renderNavigation(searchInput.value);
         
-        const formattedContent = item.content.replace(/\n/g, '<br>');
-        
-        contentArea.innerHTML = `
+        let html = `
             <span class="meta-tag">${item.category}</span>
             <h1>${item.title}</h1>
-            <div class="description">${formattedContent}</div>
         `;
+
+        // クラス詳細データがある場合の表示ロジック
+        if (item.features) {
+            html += `
+                <div class="class-grid">
+                    <div class="class-section">
+                        <h3>特徴</h3>
+                        <p class="description">${item.features}</p>
+                    </div>
+                    <div class="class-section">
+                        <h3>戦闘スタイル</h3>
+                        <p class="description">${item.style}</p>
+                    </div>
+                    <div class="class-section">
+                        <h3>弱点</h3>
+                        <p class="description weakness-text">${item.weakness}</p>
+                    </div>
+                    <div class="class-section">
+                        <h3>基本ビルド</h3>
+                        <p class="description build-text">${item.builds}</p>
+                    </div>
+                </div>
+            `;
+        } else {
+            // 通常のコンテンツ表示
+            const formattedContent = item.content.replace(/\n/g, '<br>');
+            html += `<div class="description">${formattedContent}</div>`;
+        }
+
+        contentArea.innerHTML = html;
         document.querySelector('main').scrollTop = 0;
     }
 
-    // --- Mobile UI ---
     function toggleSidebar() { sidebar.classList.toggle('open'); }
     function closeSidebarOutside() { if (window.innerWidth <= 768) sidebar.classList.remove('open'); }
 
-    // --- Init ---
     searchInput.addEventListener('input', (e) => renderNavigation(e.target.value));
     renderNavigation();
 
